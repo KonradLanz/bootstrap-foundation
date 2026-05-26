@@ -28,3 +28,8 @@ clone_foundation_repos() {
         echo '  ExecutionPolicy-Foundation: Windows-only, uebersprungen'
     fi
 }
+
+clone_qnap_repos() {
+    clone_or_pull 'qnap-config-keeper'
+    clone_or_pull 'qnap-dotfiles'
+}

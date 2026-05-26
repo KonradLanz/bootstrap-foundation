@@ -6,9 +6,10 @@
 # Source this file from individual service bootstrap scripts:
 #   . "$(dirname "$0")/../lib/docker-service.sh"
 #
-# IMPORTANT ash gotcha avoided here:
-#   cmd | while read  →  while runs in subshell, variables don't propagate.
-#   Fix: write to tempfile, then:  while read line; do ...; done < "$tmpfile"
+# ash set -e gotchas fixed here:
+#   1. 'cmd | while' subshell: replaced with tempfile + redirect
+#   2. '[ cond ] && cmd' in functions: exits 1 when cond false under set -e
+#      Fix: every log function ends with explicit 'return 0'
 ################################################################################
 
 # ── Colours ──────────────────────────────────────────────────────────────────
@@ -19,12 +20,24 @@ BLUE='\033[1;36m'
 MAGENTA='\033[0;35m'
 NC='\033[0m'
 
-log_info()    { printf "${BLUE}[INFO]${NC} %s\n" "$*"; }
-log_success() { printf "${GREEN}[OK]${NC} %s\n" "$*"; }
-log_warn()    { printf "${YELLOW}[WARN]${NC} %s\n" "$*"; }
+# Every log function MUST return 0 explicitly.
+# '[ cond ] && cmd' exits 1 when cond is false — fatal under set -e.
+log_info()    { printf "${BLUE}[INFO]${NC} %s\n" "$*"; return 0; }
+log_success() { printf "${GREEN}[OK]${NC} %s\n" "$*"; return 0; }
+log_warn()    { printf "${YELLOW}[WARN]${NC} %s\n" "$*"; return 0; }
 log_error()   { printf "${RED}[ERROR]${NC} %s\n" "$*" >&2; exit 1; }
-log_debug()   { [ "$VERBOSE" -eq 1 ] && printf "${MAGENTA}[DEBUG]${NC} %s\n" "$*"; }
-log_dry_run() { [ "$DRY_RUN"  -eq 1 ] && printf "${MAGENTA}[DRY-RUN]${NC} %s\n" "$*"; }
+log_debug() {
+    if [ "$VERBOSE" -eq 1 ]; then
+        printf "${MAGENTA}[DEBUG]${NC} %s\n" "$*"
+    fi
+    return 0
+}
+log_dry_run() {
+    if [ "$DRY_RUN" -eq 1 ]; then
+        printf "${MAGENTA}[DRY-RUN]${NC} %s\n" "$*"
+    fi
+    return 0
+}
 
 # ── Dry-run wrappers ──────────────────────────────────────────────────────────
 execute_cmd() {
@@ -58,6 +71,7 @@ ALWAYS_CONFIRM=0
 confirm_action() {
     # confirm_action <description>
     # Returns 0 to proceed, 1 to abort.
+    # Callers using set -e must guard: confirm_action "..." || { ...; exit 0; }
     _adesc="$1"
     if [ "$ALWAYS_CONFIRM" -eq 1 ]; then
         log_success "Auto-confirm: $_adesc"
@@ -122,7 +136,6 @@ get_management_ip() {
 # 'while ... done < file' runs in the current shell — variables propagate.
 
 _shares_tmpfile() {
-    # Write sorted /share/ symlink names to a tempfile; print tempfile path.
     _tf=$(mktemp /tmp/shares.XXXXXX)
     find /share/ -maxdepth 1 -type l ! -name 'NFSv=*' \
         | sed 's|^/share/||' | sort > "$_tf"
@@ -152,6 +165,7 @@ list_available_volumes() {
         fi
     done < "$_tf"
     rm -f "$_tf"
+    return 0
 }
 
 select_volume() {
@@ -176,19 +190,16 @@ select_volume() {
     printf "\n${BLUE}[INFO]${NC} Enter share number [1-%d] (default: 1): " "$_max"
     read -r _choice
 
-    # Default / empty → 1
     case "$_choice" in
         ''|0) _choice=1 ;;
     esac
 
-    # Clamp to valid range
     if ! expr "$_choice" : '^[0-9][0-9]*$' >/dev/null 2>&1 \
         || [ "$_choice" -lt 1 ] || [ "$_choice" -gt "$_max" ]; then
         log_warn "Invalid choice '$_choice', using 1."
         _choice=1
     fi
 
-    # Resolve line N from tempfile — no subshell needed
     _chosen=$(sed -n "${_choice}p" "$_tf")
     rm -f "$_tf"
 
@@ -196,12 +207,11 @@ select_volume() {
 
     SELECTED_VOLUME="/share/$_chosen"
     log_success "Selected volume: $SELECTED_VOLUME"
+    return 0
 }
 
 # ── autorun.sh hook ───────────────────────────────────────────────────────────
 add_autorun_hook() {
-    # add_autorun_hook <service_dir> <hook_comment>
-    # Appends docker compose up -d hook to /etc/config/autorun.sh once.
     _svc_dir="$1"
     _comment="${2:-# Auto-started service}"
     _autorun="/etc/config/autorun.sh"
@@ -216,11 +226,12 @@ add_autorun_hook() {
 
     if [ "$DRY_RUN" -eq 1 ]; then
         log_dry_run "WOULD APPEND to $_autorun: $_comment"
-        log_dry_run "WOULD APPEND to $_autorun: $_hook"
+        log_dry_run "WOULD APPEND: $_hook"
         return 0
     fi
 
     [ -f "$_autorun" ] || { printf '#!/bin/sh\n' > "$_autorun"; chmod +x "$_autorun"; }
     printf '\n%s\n%s\n' "$_comment" "$_hook" >> "$_autorun"
     log_success "autorun hook added to $_autorun"
+    return 0
 }

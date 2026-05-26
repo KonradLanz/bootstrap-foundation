@@ -26,7 +26,7 @@ NAS_SSL_DIR="/share/ssl/own.dedyn.io"
 ACME_DIR="/cf/conf/acme"
 DOMAIN="own.dedyn.io"
 
-# Space-separated list of container names to restart after cert update
+# Space-separated list of Docker container names to restart on the NAS after cert update
 RESTART_CONTAINERS="gitea"
 
 # ── Logging ───────────────────────────────────────────────────────────────────────────────────
@@ -35,7 +35,7 @@ log() { printf "[%s] %s\n" "$(date '+%Y-%m-%d %H:%M:%S')" "$*" | tee -a "$LOG"; 
 
 log "=== cert sync start ==="
 
-# ── Verify source files ───────────────────────────────────────────────────────────────────────────
+# ── Verify source files ──────────────────────────────────────────────────────────────────────
 FULLCHAIN="$ACME_DIR/${DOMAIN}.fullchain"
 KEY="$ACME_DIR/${DOMAIN}.key"
 
@@ -44,15 +44,15 @@ KEY="$ACME_DIR/${DOMAIN}.key"
 
 log "Certs: $FULLCHAIN ($(wc -c < "$FULLCHAIN") bytes), $KEY ($(wc -c < "$KEY") bytes)"
 
-# ── Create target directory on NAS ───────────────────────────────────────────────────────────────
 SSH_OPTS="-i $NAS_SSH_KEY -o StrictHostKeyChecking=no -o ConnectTimeout=10"
 
+# ── Create target directory on NAS ─────────────────────────────────────────────────────────────
 ssh $SSH_OPTS "${NAS_USER}@${NAS_HOST}" \
     "mkdir -p \"$NAS_SSL_DIR\" && chmod 700 \"$NAS_SSL_DIR\"" \
     && log "NAS: $NAS_SSL_DIR ready" \
     || { log "ERROR: Could not create $NAS_SSL_DIR on NAS"; exit 1; }
 
-# ── Push cert files ──────────────────────────────────────────────────────────────────────────────────
+# ── Push cert files ──────────────────────────────────────────────────────────────────────────────
 scp -i "$NAS_SSH_KEY" -o StrictHostKeyChecking=no \
     "$FULLCHAIN" \
     "$KEY" \
@@ -65,10 +65,10 @@ ssh $SSH_OPTS "${NAS_USER}@${NAS_HOST}" \
     && log "NAS: permissions set (fullchain 644, key 600)" \
     || log "WARN: Could not set cert permissions on NAS"
 
-# ── Reload containers ───────────────────────────────────────────────────────────────────────────────────
+# ── Restart containers on NAS via SSH ───────────────────────────────────────────────────────
 for _svc in $RESTART_CONTAINERS; do
     ssh $SSH_OPTS "${NAS_USER}@${NAS_HOST}" \
-        "docker restart \"$_svc\" 2>&1" \
+        "docker restart '$_svc'" \
         && log "NAS: container '$_svc' restarted" \
         || log "WARN: could not restart '$_svc' — may not be running yet"
 done

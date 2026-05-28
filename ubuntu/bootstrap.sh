@@ -9,6 +9,13 @@ set -e
 GITHUB_USER="${GITHUB_USER:-KonradLanz}"
 REPO_BASE="$HOME/github"
 
+# sudo-Wrapper: als root kein sudo noetig
+if [ "$(id -u)" = "0" ]; then
+    SUDO=""
+else
+    SUDO="sudo"
+fi
+
 echo ''
 echo '================================================'
 echo '  bootstrap-foundation: Ubuntu / Debian'
@@ -17,12 +24,12 @@ echo ''
 
 # 1) apt update
 echo '[1/3] apt update...'
-apt-get update -qq
+$SUDO apt-get update -qq
 echo '      OK'
 
 # 2) git + curl
 echo '[2/3] Installiere git + curl...'
-apt-get install -y git curl wget
+$SUDO apt-get install -y git curl wget
 echo '      OK'
 
 # 3) Repos klonen

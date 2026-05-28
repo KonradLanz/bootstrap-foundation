@@ -23,17 +23,32 @@ echo '================================================'
 echo ''
 
 # 1) apt update
-echo '[1/3] apt update...'
+echo '[1/4] apt update...'
 $SUDO apt-get update -qq
 echo '      OK'
 
-# 2) git + curl
-echo '[2/3] Installiere git + curl...'
+# 2) git + curl + wget
+echo '[2/4] Installiere git + curl + wget...'
 $SUDO apt-get install -y git curl wget
 echo '      OK'
 
-# 3) Repos klonen
-echo '[3/3] Repos klonen...'
+# 3) GitHub CLI (gh)
+echo '[3/4] Installiere gh (GitHub CLI)...'
+if ! command -v gh >/dev/null 2>&1; then
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+        | $SUDO dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+    $SUDO chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+        | $SUDO tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+    $SUDO apt-get update -qq
+    $SUDO apt-get install -y gh
+else
+    echo '      gh bereits installiert, ueberspringe'
+fi
+echo '      OK'
+
+# 4) Repos klonen
+echo '[4/4] Repos klonen...'
 mkdir -p "$REPO_BASE"
 for REPO in bootstrap-foundation; do
     DIR="$REPO_BASE/$REPO"
@@ -53,4 +68,5 @@ echo '  Ubuntu Bootstrap abgeschlossen!'
 echo '================================================'
 echo ''
 echo "Repos: $REPO_BASE"
+echo 'Naechster Schritt: gh auth login'
 echo ''

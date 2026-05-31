@@ -10,13 +10,16 @@
 #   sh qnap/forgejo/bootstrap-forgejo.sh [OPTIONS] [DOMAIN] [ADMIN_PASS]
 #
 # Options:
-#   --dry-run           Show what would be done; make no changes
-#   --verbose, -v       Print debug output
-#   --http-port PORT    HTTP port for Forgejo     (default: 3000)
-#   --ssh-port  PORT    SSH port for Forgejo      (default: 2222)
-#   --postgres          Use shared PostgreSQL container (nas-postgres)
-#   --tls               Enable HTTPS using cert at SSL_CERT_DIR
-#   --ssl-dir PATH      Path to TLS certs        (default: /share/ssl/own.dedyn.io)
+#   --dry-run             Show what would be done; make no changes
+#   --verbose, -v         Print debug output
+#   --http-port PORT      HTTP port for Forgejo       (default: 3000)
+#   --ssh-port  PORT      SSH port for Forgejo        (default: 2222)
+#   --image-tag TAG       Forgejo image tag           (default: 10)
+#   --postgres            Use shared PostgreSQL container (nas-postgres)
+#   --tls                 Enable HTTPS using cert at SSL_CERT_DIR
+#   --ssl-dir PATH        Path to TLS certs          (default: /share/ssl/own.dedyn.io)
+#   --rewrite-compose     Overwrite existing docker-compose.yml with new options
+#                         (keeps data/config dirs, only regenerates compose file)
 #
 # Compatible with BusyBox ash (no declare, no [[, no bash arrays).
 ################################################################################
@@ -34,21 +37,25 @@ FORGEJO_DOMAIN=""
 FORGEJO_ADMIN_PASS=""
 HTTP_PORT=3000
 SSH_PORT=2222
+IMAGE_TAG="10"
 USE_POSTGRES=0
 USE_TLS=0
 SSL_CERT_DIR="/share/ssl/own.dedyn.io"
 SHARED_NETWORK="nas-services"
+REWRITE_COMPOSE=0
 
 # ── Parse arguments ───────────────────────────────────────────────────────────
 while [ $# -gt 0 ]; do
     case "$1" in
-        --dry-run)      DRY_RUN=1;  shift ;;
-        --verbose|-v)   VERBOSE=1;  shift ;;
-        --postgres)     USE_POSTGRES=1; shift ;;
-        --tls)          USE_TLS=1;  shift ;;
-        --http-port)    HTTP_PORT="$2";    shift 2 ;;
-        --ssh-port)     SSH_PORT="$2";     shift 2 ;;
-        --ssl-dir)      SSL_CERT_DIR="$2"; shift 2 ;;
+        --dry-run)           DRY_RUN=1;  shift ;;
+        --verbose|-v)        VERBOSE=1;  shift ;;
+        --postgres)          USE_POSTGRES=1; shift ;;
+        --tls)               USE_TLS=1;  shift ;;
+        --http-port)         HTTP_PORT="$2";    shift 2 ;;
+        --ssh-port)          SSH_PORT="$2";     shift 2 ;;
+        --image-tag)         IMAGE_TAG="$2";    shift 2 ;;
+        --ssl-dir)           SSL_CERT_DIR="$2"; shift 2 ;;
+        --rewrite-compose)   REWRITE_COMPOSE=1; shift ;;
         --help|-h)
             cat <<EOF
 bootstrap-forgejo.sh — Install Forgejo via Docker on QNAP
@@ -57,25 +64,31 @@ Usage:
   $0 [OPTIONS] [DOMAIN] [ADMIN_PASS]
 
 Options:
-  --dry-run           Show what would be done; make no changes
-  --verbose, -v       Print debug output
-  --http-port PORT    HTTP port (default: 3000)
-  --ssh-port PORT     SSH port  (default: 2222)
-  --postgres          Use shared PostgreSQL (requires bootstrap-postgres.sh run first)
-  --tls               Enable HTTPS with cert from --ssl-dir
-  --ssl-dir PATH      Path containing own.dedyn.io.fullchain + own.dedyn.io.key
-                      (default: /share/ssl/own.dedyn.io)
-  --help, -h          Show this help
+  --dry-run             Show what would be done; make no changes
+  --verbose, -v         Print debug output
+  --http-port PORT      HTTP port (default: 3000)
+  --ssh-port PORT       SSH port  (default: 2222)
+  --image-tag TAG       Forgejo image tag on Codeberg (default: 10)
+                        Use 'docker search codeberg.org/forgejo/forgejo' to list tags.
+  --postgres            Use shared PostgreSQL (requires bootstrap-postgres.sh run first)
+  --tls                 Enable HTTPS with cert from --ssl-dir
+  --ssl-dir PATH        Path containing own.dedyn.io.fullchain + own.dedyn.io.key
+                        (default: /share/ssl/own.dedyn.io)
+  --rewrite-compose     Overwrite existing docker-compose.yml with new options.
+                        Data and config directories are kept — only the compose
+                        file is regenerated. Use when switching database or TLS.
+  --help, -h            Show this help
 
 Positional:
-  DOMAIN              Public domain or NAS IP (e.g. forgejo.own.dedyn.io)
-  ADMIN_PASS          Admin password (prompted if omitted)
+  DOMAIN                Public domain or NAS IP (e.g. forgejo.own.dedyn.io)
+  ADMIN_PASS            Admin password (prompted if omitted)
 
 Examples:
   $0 --dry-run
   $0 192.168.0.215
   $0 --postgres --tls forgejo.own.dedyn.io
-  $0 --postgres --tls --ssl-dir /share/ssl/own.dedyn.io forgejo.own.dedyn.io
+  $0 --postgres --tls --rewrite-compose forgejo.own.dedyn.io
+  $0 --postgres --tls --image-tag 11 --rewrite-compose forgejo.own.dedyn.io
 EOF
             exit 0
             ;;
@@ -106,6 +119,8 @@ printf "${BLUE}║  Forgejo Bootstrap — QNAP Docker Install             ║${N
 printf "${BLUE}╚══════════════════════════════════════════════════════╝${NC}\n"
 [ "$DRY_RUN" -eq 1 ] && \
     printf "${YELLOW}  *** DRY-RUN mode — no changes will be made ***${NC}\n"
+[ "$REWRITE_COMPOSE" -eq 1 ] && \
+    printf "${YELLOW}  *** --rewrite-compose: existing docker-compose.yml will be overwritten ***${NC}\n"
 printf "\n"
 
 # ── Step 1: System info ────────────────────────────────────────────────────────
@@ -180,7 +195,12 @@ log_info "[4/6] Selecting persistent volume..."
 
 FORGEJO_BASE=""
 if [ -d /share/docs/forgejo ] && [ -f /share/docs/forgejo/docker-compose.yml ]; then
-    log_warn "Existing installation detected at /share/docs/forgejo — reusing volume."
+    if [ "$REWRITE_COMPOSE" -eq 1 ]; then
+        log_warn "Existing installation at /share/docs/forgejo — --rewrite-compose: compose will be regenerated."
+    else
+        log_warn "Existing installation detected at /share/docs/forgejo — reusing volume."
+        log_warn "To regenerate docker-compose.yml with new options, add --rewrite-compose"
+    fi
     FORGEJO_BASE="/share/docs/forgejo"
     SELECTED_VOLUME="/share/docs"
 else
@@ -200,68 +220,75 @@ log_debug   "  config: $CONFIG_DIR"
 # ── Step 5: Create directories + generate compose ─────────────────────────────
 log_info "[5/6] Creating directories and configuration..."
 
-confirm_action "Create $FORGEJO_BASE/{data,config} and docker-compose.yml" || {
-    log_warn "Installation aborted."
-    exit 0
-}
+# Skip compose generation if existing install and --rewrite-compose not set
+if [ -f "$COMPOSE_FILE" ] && [ "$REWRITE_COMPOSE" -eq 0 ]; then
+    log_warn "docker-compose.yml exists — skipping regeneration (use --rewrite-compose to overwrite)"
+else
+    confirm_action "Write $COMPOSE_FILE  [DB: $([ "$USE_POSTGRES" -eq 1 ] && echo PostgreSQL || echo SQLite3)  TLS: $([ "$USE_TLS" -eq 1 ] && echo yes || echo no)  image: codeberg.org/forgejo/forgejo:${IMAGE_TAG}]" || {
+        log_warn "Installation aborted."
+        exit 0
+    }
 
-execute_cmd "mkdir -p $DATA_DIR"   "mkdir -p \"$DATA_DIR\""
-execute_cmd "mkdir -p $CONFIG_DIR" "mkdir -p \"$CONFIG_DIR\""
+    execute_cmd "mkdir -p $DATA_DIR"   "mkdir -p \"$DATA_DIR\""
+    execute_cmd "mkdir -p $CONFIG_DIR" "mkdir -p \"$CONFIG_DIR\""
 
-# Build database env block
-if [ "$USE_POSTGRES" -eq 1 ]; then
-    PG_ENV_FILE="$SELECTED_VOLUME/postgres/.env"
-    PG_USER="nasuser"
-    PG_PASS=""
-    if [ -f "$PG_ENV_FILE" ]; then
-        PG_USER=$(grep "^POSTGRES_USER=" "$PG_ENV_FILE" | cut -d'=' -f2-)
-        PG_PASS=$(grep "^POSTGRES_PASSWORD=" "$PG_ENV_FILE" | cut -d'=' -f2-)
-    fi
-    if [ -z "$PG_PASS" ]; then
-        printf "\n${YELLOW}[INPUT]${NC} PostgreSQL password for user '%s': " "$PG_USER"
-        stty -echo 2>/dev/null || true
-        read -r PG_PASS
-        stty echo 2>/dev/null || true
-        printf "\n"
-    fi
-    DB_ENV="      - FORGEJO__database__DB_TYPE=postgres
+    # Build database env block
+    if [ "$USE_POSTGRES" -eq 1 ]; then
+        PG_ENV_FILE="$SELECTED_VOLUME/postgres/.env"
+        PG_USER="nasuser"
+        PG_PASS=""
+        if [ -f "$PG_ENV_FILE" ]; then
+            PG_USER=$(grep "^POSTGRES_USER="     "$PG_ENV_FILE" | cut -d'=' -f2-)
+            PG_PASS=$(grep "^POSTGRES_PASSWORD=" "$PG_ENV_FILE" | cut -d'=' -f2-)
+        fi
+        if [ -z "$PG_PASS" ]; then
+            printf "\n${YELLOW}[INPUT]${NC} PostgreSQL password for user '%s': " "$PG_USER"
+            stty -echo 2>/dev/null || true
+            read -r PG_PASS
+            stty echo 2>/dev/null || true
+            printf "\n"
+        fi
+        DB_ENV="      - FORGEJO__database__DB_TYPE=postgres
       - FORGEJO__database__HOST=nas-postgres:5432
       - FORGEJO__database__NAME=forgejo
       - FORGEJO__database__USER=${PG_USER}
       - FORGEJO__database__PASSWD=${PG_PASS}
       - FORGEJO__database__SSL_MODE=disable"
-    CREATE_DB_CMD="docker exec nas-postgres psql -U ${PG_USER} -tc \"SELECT 1 FROM pg_database WHERE datname='forgejo'\" | grep -q 1 || docker exec nas-postgres psql -U ${PG_USER} -c \"CREATE DATABASE forgejo ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE template0;\""
-    execute_cmd "Create forgejo database in PostgreSQL" "$CREATE_DB_CMD"
-    NETWORK_SECTION="    networks:
+        CREATE_DB_CMD="docker exec nas-postgres psql -U ${PG_USER} -tc \"SELECT 1 FROM pg_database WHERE datname='forgejo'\" | grep -q 1 || docker exec nas-postgres psql -U ${PG_USER} -c \"CREATE DATABASE forgejo ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE template0;\""
+        execute_cmd "Create forgejo database in PostgreSQL" "$CREATE_DB_CMD"
+        NETWORK_SECTION="    networks:
       - ${SHARED_NETWORK}
 
 networks:
   ${SHARED_NETWORK}:
     external: true"
-else
-    DB_ENV="      - FORGEJO__database__DB_TYPE=sqlite3
+    else
+        DB_ENV="      - FORGEJO__database__DB_TYPE=sqlite3
       - FORGEJO__database__PATH=/data/forgejo.db"
-    NETWORK_SECTION=""
-fi
+        NETWORK_SECTION=""
+    fi
 
-# Build TLS env block
-# Note: Forgejo uses the same FORGEJO__ env prefix as Gitea uses GITEA__
-if [ "$USE_TLS" -eq 1 ]; then
-    TLS_ENV="      - FORGEJO__server__PROTOCOL=https
+    # Build TLS env block
+    if [ "$USE_TLS" -eq 1 ]; then
+        TLS_ENV="      - FORGEJO__server__PROTOCOL=https
       - FORGEJO__server__CERT_FILE=/ssl/own.dedyn.io.fullchain
       - FORGEJO__server__KEY_FILE=/ssl/own.dedyn.io.key"
-    TLS_VOLUME="      - ${SSL_CERT_DIR}:/ssl:ro"
-else
-    TLS_ENV="      - FORGEJO__server__PROTOCOL=http"
-    TLS_VOLUME=""
-fi
+        TLS_VOLUME="      - ${SSL_CERT_DIR}:/ssl:ro"
+    else
+        TLS_ENV="      - FORGEJO__server__PROTOCOL=http"
+        TLS_VOLUME=""
+    fi
 
-COMPOSE_CONTENT="# docker-compose.yml — Forgejo on QNAP
-# Generated by bootstrap-forgejo.sh — regenerate: sh qnap/forgejo/bootstrap-forgejo.sh [OPTIONS]
+    COMPOSE_CONTENT="# docker-compose.yml — Forgejo on QNAP
+# Generated by bootstrap-forgejo.sh
+# Regenerate: sh qnap/forgejo/bootstrap-forgejo.sh --rewrite-compose [OPTIONS] DOMAIN
+# Image tag : codeberg.org/forgejo/forgejo:${IMAGE_TAG}
+# Database  : $([ "$USE_POSTGRES" -eq 1 ] && echo "PostgreSQL (nas-postgres)" || echo "SQLite3")
+# TLS       : $([ "$USE_TLS" -eq 1 ] && echo "enabled ($SSL_CERT_DIR)" || echo "disabled")
 
 services:
   forgejo:
-    image: codeberg.org/forgejo/forgejo:latest
+    image: codeberg.org/forgejo/forgejo:${IMAGE_TAG}
     container_name: forgejo
     restart: unless-stopped
     environment:
@@ -293,19 +320,20 @@ ${TLS_VOLUME}
       - \"${SSH_PORT}:22\"
 ${NETWORK_SECTION}"
 
-write_file "$COMPOSE_FILE" "$COMPOSE_CONTENT"
-log_success "docker-compose.yml written: $COMPOSE_FILE"
+    write_file "$COMPOSE_FILE" "$COMPOSE_CONTENT"
+    log_success "docker-compose.yml written: $COMPOSE_FILE"
+fi
 
 # ── Step 6: Pull + start + autorun ────────────────────────────────────────────
 log_info "[6/6] Pulling Forgejo image and starting container..."
 
-confirm_action "Pull codeberg.org/forgejo/forgejo:latest and start container" || {
+confirm_action "Pull codeberg.org/forgejo/forgejo:${IMAGE_TAG} and start container" || {
     log_warn "Skipped. Run manually: cd $FORGEJO_BASE && $COMPOSE_CMD up -d"
     exit 0
 }
 
-execute_cmd "docker pull codeberg.org/forgejo/forgejo:latest" \
-    "docker pull codeberg.org/forgejo/forgejo:latest"
+execute_cmd "docker pull codeberg.org/forgejo/forgejo:${IMAGE_TAG}" \
+    "docker pull codeberg.org/forgejo/forgejo:${IMAGE_TAG}"
 
 execute_cmd "Start Forgejo container" \
     "cd \"$FORGEJO_BASE\" && $COMPOSE_CMD up -d"
@@ -330,6 +358,7 @@ else
     printf "  ${BLUE}Web UI${NC}       : http://%s:%s\n"        "$LOCAL_IP" "$HTTP_PORT"
 fi
 printf "  ${BLUE}SSH clone${NC}    : ssh://git@%s:%s\n"    "$FORGEJO_DOMAIN" "$SSH_PORT"
+printf "  ${BLUE}Image${NC}        : codeberg.org/forgejo/forgejo:%s\n" "$IMAGE_TAG"
 if [ "$USE_POSTGRES" -eq 1 ]; then
     printf "  ${BLUE}Database${NC}     : PostgreSQL (nas-postgres)\n"
 else

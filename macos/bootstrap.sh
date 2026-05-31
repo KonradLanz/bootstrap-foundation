@@ -30,7 +30,7 @@ if [ -f /opt/homebrew/bin/brew ]; then
 fi
 
 # 1) Xcode CLT
-printf '[1/6] Xcode Command Line Tools... '
+printf '[1/7] Xcode Command Line Tools... '
 if xcode-select -p >/dev/null 2>&1; then
   _skip 'bereits installiert'
 else
@@ -42,7 +42,7 @@ else
 fi
 
 # 2) Homebrew
-printf '[2/6] Homebrew... '
+printf '[2/7] Homebrew... '
 if command -v brew >/dev/null 2>&1; then
   _skip 'bereits installiert'
 else
@@ -57,28 +57,22 @@ else
   _ok 'Homebrew installiert'
 fi
 
-# 3) git + gh
-printf '[3/6] git + gh... '
-NEED_INSTALL=0
-brew list git >/dev/null 2>&1 || { brew install git; NEED_INSTALL=1; }
-brew list gh   >/dev/null 2>&1 || { brew install gh;  NEED_INSTALL=1; }
-if [ "$NEED_INSTALL" -eq 0 ]; then
-  _skip 'git + gh bereits installiert'
+# 3) Foundation Tools (git, gh, keepassxc + alle weiteren)
+printf '[3/7] Foundation Tools... '
+echo ''
+DIR_FOUNDATION="${GIT_BASE}/bootstrap-foundation"
+if [ -f "${DIR_FOUNDATION}/macos/foundations/tools.sh" ]; then
+  bash "${DIR_FOUNDATION}/macos/foundations/tools.sh"
 else
-  _ok 'git + gh installiert'
+  # Fallback: Mindestset bevor Repo geklont ist
+  for tool in git gh; do
+    brew list "$tool" >/dev/null 2>&1 && _skip "${tool}" || { brew install "$tool"; _ok "${tool} installiert"; }
+  done
+  brew list --cask keepassxc >/dev/null 2>&1 && _skip 'keepassxc' || { brew install --cask keepassxc; _ok 'keepassxc installiert'; }
 fi
 
-# 4) keepassxc (fuer Token-Verwaltung)
-printf '[4/6] keepassxc... '
-if brew list --cask keepassxc >/dev/null 2>&1; then
-  _skip 'keepassxc bereits installiert'
-else
-  brew install --cask keepassxc
-  _ok 'keepassxc installiert'
-fi
-
-# 5) Foundation Repo klonen / aktualisieren
-printf '[5/6] bootstrap-foundation Repo... '
+# 4) Foundation Repo klonen / aktualisieren
+printf '[4/7] bootstrap-foundation Repo... '
 mkdir -p "${GIT_BASE}"
 DIR="${GIT_BASE}/bootstrap-foundation"
 if [ ! -d "${DIR}/.git" ]; then
@@ -90,8 +84,13 @@ else
   git -C "${DIR}" pull --ff-only 2>/dev/null && _skip 'Repo aktuell' || _ok 'Repo aktualisiert'
 fi
 
-# 6) Tracker starten (idempotent - setup.sh prueft selbst ob schon initialisiert)
-printf '[6/6] Tracker einrichten... '
+# 5) Foundation Tools (nochmal mit vollem Skript nach Repo-Klon)
+printf '[5/7] Foundation Tools (vollstaendig)... '
+echo ''
+bash "${DIR}/macos/foundations/tools.sh"
+
+# 6) Tracker einrichten
+printf '[6/7] Tracker einrichten... '
 echo ''
 
 BT_DIR="${GIT_BASE}/brew-tracker"
@@ -120,6 +119,7 @@ else
   _ok 'brew-hook in .zshrc eingetragen'
 fi
 
+# 7) Fertig
 echo ''
 echo '================================================'
 echo '  macOS Bootstrap abgeschlossen!'

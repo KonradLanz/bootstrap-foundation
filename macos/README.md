@@ -9,7 +9,8 @@ curl -fsSL https://raw.githubusercontent.com/KonradLanz/bootstrap-foundation/mai
 ```
 
 Bootstrap erledigt automatisch:
-- Xcode CLT → Homebrew → git + gh + keepassxc
+- Xcode CLT → Homebrew
+- **Foundation Tools** installieren (`foundations/tools.sh`): `git`, `gh`, `curl`, `jq`, `ripgrep`, `fzf`, `sops`, `keepassxc`, ...
 - `bootstrap-foundation` nach `~/git` klonen
 - brew-tracker + dotfiles-tracker initialisieren
 - brew-hook in `~/.zshrc` eintragen
@@ -34,28 +35,50 @@ Jeder Schritt prüft vor der Ausführung ob er bereits erledigt wurde:
 | `[>>]` | Wird jetzt ausgeführt |
 | `[OK]` | Erfolgreich abgeschlossen |
 
-Beispiellauf auf bestehendem Mac:
-```
-[--]  Xcode CLT bereits installiert
-[--]  Homebrew bereits installiert
-[--]  git + gh bereits installiert
-[--]  keepassxc bereits installiert
-[--]  Repo aktuell
-[--]  brew-tracker bereits eingerichtet
-[--]  dotfiles-tracker bereits eingerichtet
-[--]  brew-hook bereits in .zshrc
-```
-
 ## Skripte
 
 | Skript | Was |
 |---|---|
-| `bootstrap.sh` | Alles-in-einem: CLT, Homebrew, git, gh, keepassxc, Repo klonen, Tracker starten |
+| `bootstrap.sh` | Alles-in-einem: CLT, Homebrew, Foundation Tools, Repo klonen, Tracker starten |
+| `foundations/tools.sh` | Deklarative Liste aller Foundation-Tools (CLI + Casks) |
 | `02-gh-auth.sh` | gh auth login, git credential helper, git identity + defaults |
 | `03-gh-token-keepass.sh` | PAT aus gh lesen oder manuell, in KeePassXC speichern |
 | `04-ssh-key-github.sh` | Ed25519 Key, macOS Keychain, ~/.ssh/config, bei GitHub registrieren, Remote auf SSH umstellen |
 | `brew-tracker/setup.sh` | brew-tracker Repo initialisieren + ersten Brewfile-Snapshot |
 | `dotfiles-tracker/setup.sh` | dotfiles-tracker Repo initialisieren + initiale Dotfiles erfassen |
+
+## Foundation Tools (`foundations/tools.sh`)
+
+### CLI-Tools
+
+| Tool | Zweck |
+|---|---|
+| `git` | Versionskontrolle |
+| `gh` | GitHub CLI — PR, Auth, Releases, Secrets, Codespaces |
+| `curl` | HTTP-Client |
+| `wget` | Alternativer HTTP-Client |
+| `jq` | JSON-Verarbeitung |
+| `yq` | YAML-Verarbeitung |
+| `tree` | Verzeichnisbaum |
+| `htop` | Prozessmonitor |
+| `ripgrep` | Schnelles grep (`rg`) |
+| `fd` | Schnelles find |
+| `bat` | `cat` mit Syntax-Highlighting |
+| `eza` | Modernes `ls` |
+| `fzf` | Fuzzy-Finder |
+| `zoxide` | Smarter `cd`-Ersatz |
+| `tldr` | Kurzreferenz für Kommandos |
+| `make` | Build-Tool |
+| `gnupg` | GPG für Signaturen |
+| `age` | Modernes Verschlüsselungstool |
+| `sops` | Secrets-Verschlüsselung für Git |
+
+### Cask-Apps
+
+| App | Zweck |
+|---|---|
+| `keepassxc` | Passwortmanager |
+| `visual-studio-code` | Editor |
 
 ## Umgebungsvariablen
 
@@ -70,8 +93,6 @@ Beispiellauf auf bestehendem Mac:
 | `DOTFILES_TRACKER_DIR` | `~/git/dotfiles-tracker` | dotfiles-tracker Repo |
 
 ## Rebase-Workflow
-
-Nach Bootstrap ist das Repo per SSH erreichbar:
 
 ```bash
 cd ~/git/bootstrap-foundation

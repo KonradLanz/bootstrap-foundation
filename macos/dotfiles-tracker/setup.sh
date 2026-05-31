@@ -20,7 +20,6 @@ echo '================================================'
 echo ''
 
 # Konfigurierte Dateien: "Quelle|Zieldatei-im-Repo"
-# Quelle kann ~ enthalten, wird mit $HOME expandiert
 FILES="
 $HOME/.zshrc|zshrc
 $HOME/.zprofile|zprofile
@@ -66,6 +65,7 @@ echo "$FILES" | while IFS='|' read -r src dst; do
 done
 
 # 3) Symlinks setzen (Original ersetzen durch Symlink ins Repo)
+# /etc/* wird NICHT verlinkt (braucht sudo) - nur getrackt
 echo '[3/4] Symlinks setzen...'
 echo "$FILES" | while IFS='|' read -r src dst; do
   [ -z "$src" ] && continue
@@ -73,22 +73,21 @@ echo "$FILES" | while IFS='|' read -r src dst; do
   dst_path="${DOTFILES_DIR}/${dst}"
   [ ! -f "${dst_path}" ] && continue
 
-  # Backup des Originals (falls kein Symlink)
+  case "${src}" in
+    /etc/*)
+      echo "      INFO: ${src} - kein Symlink (braucht sudo), wird per dotfiles-sync.sh getrackt"
+      continue
+      ;;
+  esac
+
+  # Backup des Originals (nur falls noch kein Symlink)
   if [ -f "${src}" ] && [ ! -L "${src}" ]; then
     cp "${src}" "${src}.bak"
     echo "      Backup: ${src}.bak"
   fi
 
-  # Symlink nur fuer Home-Dateien (nicht /etc/ - braucht sudo)
-  case "${src}" in
-    /etc/*)
-      echo "      INFO: ${src} - kein Symlink (braucht sudo), nur getrackt"
-      ;;
-    *)
-      ln -sf "${dst_path}" "${src}"
-      echo "      Symlink: ${src} -> ${dst_path}"
-      ;;
-  esac
+  ln -sf "${dst_path}" "${src}"
+  echo "      Symlink: ${src} -> ${dst_path}"
 done
 
 # 4) Ersten Commit

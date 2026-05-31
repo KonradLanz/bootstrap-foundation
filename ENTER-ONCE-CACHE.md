@@ -18,168 +18,95 @@ In German we call this pattern **"DurchEntern"** (enter through once) and
 - Keep all cached values **local and git-ignored**.
 - Support both interactive runs and fully unattended runs.
 - Avoid introducing hard dependencies on external config formats or heavy tooling.
-- Support **multiple secure backends** for sensitive values.
 
 ## Credential Backends
 
-The helper supports three storage backends for sensitive values, selected via
-the `CREDENTIAL_BACKEND` environment variable or auto-detected at runtime:
+Die Credential-Speicherung ist in `lib/secret-backends.sh` ausgelagert
+(lebt in `main`).
 
-| Backend | Auto-detect condition | Storage | Notes |
-|---|---|---|---|
-| `keepassxc` | `keepassxc-cli` in PATH + `KL_KEEPASS_DB` exists | `.kdbx` database | **Preferred** – GUI + CLI, cross-platform |
-| `gpg` | `gpg` in PATH | `~/.cache/kl-input-cache/<repo>/<key>.gpg` | Good fallback, terminal-only |
-| `plain` | always available | `~/.cache/kl-input-cache/<repo>/<key>.txt` | Non-sensitive values only |
+Drei Backends werden unterstuetzt, automatisch erkannt oder per
+`CREDENTIAL_BACKEND` erzwungen:
 
-### Backend priority (auto mode)
+| Backend | Wann aktiv (auto) |
+|---|---|
+| `keepassxc` | `keepassxc-cli` in PATH + `KL_KEEPASS_DB` existiert |
+| `gpg` | `gpg` in PATH |
+| `plain` | immer (Fallback) |
 
-```
-keepassxc  →  gpg  →  plain
-```
-
-### KeePassXC backend
-
-Requires:
-- `keepassxc-cli` in PATH (or `KEEPASSXC_CLI` env var)
-- `KL_KEEPASS_DB` pointing to a `.kdbx` file (default: `~/KeePassLatest.kdbx`)
-- Master password entered **once per shell session** (stored in
-  `KL_KEEPASS_PASS_SESSION` in memory, never on disk)
-
-Create a new database:
-```sh
-bash services/forge/init-keepass-db.sh
-```
-
-KeePass groups used by this project:
-```
-bookstrap-foundation/
-  forge/
-    <username>_token    ← API tokens (write:repository)
-    admin_pass          ← Forge admin password
-    <username>_pass     ← Application user passwords
-```
-
-#### License
-
-KeePassXC is licensed under **GPL-2.0 or later**.
-`keepassxc-cli` is part of KeePassXC and carries the same license.
-Using `keepassxc-cli` as an external binary (subprocess) from shell scripts
-does **not** make your scripts subject to the GPL – only distribution of
-linked/combined works triggers copyleft. Shell scripts that merely invoke
-`keepassxc-cli` via `exec`/subprocess are free to use any license.
-
-See: https://keepassxc.org/docs/ and https://www.gnu.org/licenses/gpl-faq.html
-
-### GPG backend
-
-Values are symmetrically encrypted with AES-256 via GnuPG.
-No key management needed; the passphrase is requested on first use and
-cached by the gpg-agent for the session duration.
-
-GPG is pre-installed on most Linux distributions and macOS (via Homebrew).
-On QNAP Entware: `opkg install gnupg2`.
-
-#### License
-
-GnuPG is licensed under **GPL-3.0 or later** (same subprocess note applies).
+Details, Installationsanleitungen und Lizenzhinweise: **`CREDENTIAL-BACKENDS.md`**
 
 ## High-level design
 
 - Cache root: `${XDG_CACHE_HOME:-$HOME/.cache}/kl-input-cache`
-- Each git repository gets its own namespace based on the canonical
-  `git rev-parse --show-toplevel` path.
-- Within that per-repo directory, files are grouped by purpose
-  (`auth/`, `paths/`) and filenames act as keys.
-- Sensitive values use the configured backend (`keepassxc`, `gpg`);
-  non-sensitive values use `plain`.
+- Each git repository gets its own namespace based on
+  `git rev-parse --show-toplevel`.
+- Within the per-repo directory, files are grouped by purpose
+  (`forge/`, `auth/`, `paths/`) and filenames act as keys.
+- Sensitive values use the configured backend; non-sensitive values use `plain`.
+- `lib/input-cache.sh` auto-sources `lib/secret-backends.sh` from the
+  bootstrap-foundation root.
 
 ## Run modes
-
-The helper distinguishes three run modes via the `KL_RUN_MODE` environment
-variable:
 
 | Mode | Behaviour |
 |---|---|
 | `interactive` | Always prompt; Enter reuses cached value |
 | `unassisted` | Never block; reuse cache or default silently |
-| `auto` (default) | `interactive` when stdin is a TTY, else `unassisted` |
+| `auto` (default) | `interactive` when stdin is TTY, else `unassisted` |
 
-## API overview
+Set via `KL_RUN_MODE` environment variable.
 
-The main entry point is:
+## API
 
 ```sh
 kl_read_cached VAR KEY PROMPT DEFAULT SENSITIVITY
 ```
 
-| Parameter | Values | Notes |
-|---|---|---|
-| `VAR` | shell variable name | receives the value |
-| `KEY` | logical cache key | builds file path or KeePass entry |
-| `PROMPT` | human-readable string | shown in interactive mode |
-| `DEFAULT` | any string / `""` | empty = no sensible default |
-| `SENSITIVITY` | `plain` \| `gpg` \| `keepassxc` | storage backend |
+| Parameter | Values |
+|---|---|
+| `VAR` | shell variable name to assign |
+| `KEY` | logical cache key (also used as KeePass entry path) |
+| `PROMPT` | human-readable prompt |
+| `DEFAULT` | default value, `""` = no sensible default |
+| `SENSITIVITY` | `plain` \| `gpg` \| `keepassxc` \| `auto` |
 
 ### Example
 
 ```sh
 . "$BOOTSTRAP_ROOT/lib/input-cache.sh"
 
-# Non-sensitive: plain text cache
+# Non-sensitive: plain
 kl_read_cached FORGE_HOST 'forge/host' 'Forgejo base URL' 'http://localhost:3000' plain
 
-# Sensitive password: auto backend (keepassxc > gpg > plain)
-kl_read_cached FORGE_ADMIN_PASS 'forge/admin_pass' 'Forge admin password' '' "${CREDENTIAL_BACKEND:-gpg}"
+# Sensitive: auto backend
+kl_read_cached FORGE_ADMIN_PASS 'forge/admin_pass' 'Forge admin password' '' auto
 
-# GitHub token: always keepassxc
+# Always keepassxc
 kl_read_cached GITHUB_TOKEN 'auth/github_token' 'GitHub personal access token' '' keepassxc
 ```
 
-## Using the helper from other repositories
+## Using from other repositories
 
 ```sh
-SCRIPT_DIR="$(cd "$(dirname "$0")" 2>/dev/null && pwd || echo .)"
-
 if [ -n "${KL_BOOTSTRAP_ROOT:-}" ]; then
   BOOTSTRAP_ROOT="$KL_BOOTSTRAP_ROOT"
 elif [ -d "$HOME/github/bootstrap-foundation" ]; then
   BOOTSTRAP_ROOT="$HOME/github/bootstrap-foundation"
-elif [ -d "$SCRIPT_DIR/../bootstrap-foundation" ]; then
-  BOOTSTRAP_ROOT="$SCRIPT_DIR/../bootstrap-foundation"
+elif [ -d "$HOME/repos/bootstrap-foundation" ]; then
+  BOOTSTRAP_ROOT="$HOME/repos/bootstrap-foundation"
 else
-  echo "Error: bootstrap-foundation not found." >&2
+  echo "Error: bootstrap-foundation not found. Set KL_BOOTSTRAP_ROOT." >&2
   exit 1
 fi
-
 . "$BOOTSTRAP_ROOT/lib/input-cache.sh"
-```
-
-## QNAP Entware: install keepassxc-cli
-
-```bash
-# x86_64 QNAP (AppImage – kein ARM-Support)
-mkdir -p ~/bin
-wget -q -O ~/bin/KeePassXC.AppImage \
-  "https://github.com/keepassxreboot/keepassxc/releases/latest/download/KeePassXC-2.7.9-x86_64.AppImage"
-chmod +x ~/bin/KeePassXC.AppImage
-
-# Wrapper fuer keepassxc-cli
-cat > ~/bin/keepassxc-cli << 'EOF'
-#!/bin/sh
-exec ~/bin/KeePassXC.AppImage cli "$@"
-EOF
-chmod +x ~/bin/keepassxc-cli
-
-# PATH sicherstellen
-export PATH="$HOME/bin:$PATH"
 ```
 
 ## Roadmap
 
-- [ ] `keepassxc` als erstes Backend vollständig integriert ✅
-- [ ] `gpg` Backend ✅
-- [ ] `plain` Backend ✅
-- [ ] Vaultwarden/Bitwarden CLI (`bw`) als optionales viertes Backend
-- [ ] Windows: `keepassxc-cli` via Chocolatey/winget
-- [ ] macOS: `keepassxc-cli` via Homebrew
-- [ ] `init-keepass-db.sh` für alle Plattformen ✅
+- [x] `keepassxc` Backend (in `lib/secret-backends.sh` auf `main`)
+- [x] `gpg` Backend
+- [x] `plain` Backend
+- [x] `lib/input-cache.sh` sourct `secret-backends.sh` automatisch
+- [ ] Vaultwarden/Bitwarden CLI (`bw`) als viertes Backend
+- [ ] Windows: `keepassxc-cli` via winget
+- [ ] macOS: `keepassxc-cli` via Homebrew (brew install keepassxc)

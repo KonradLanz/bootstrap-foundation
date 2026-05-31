@@ -5,6 +5,7 @@ set -euo pipefail
 # Creates a user (or reuses an existing one) on Forgejo *or* Gitea and
 # generates a Personal Access Token.
 #
+<<<<<<< HEAD
 # Works against any running Forgejo or Gitea instance (QNAP Container Station,
 # Ubuntu systemd, Docker, etc.) via the shared REST API (/api/v1).
 #
@@ -14,10 +15,24 @@ set -euo pipefail
 # Idempotent: safe to re-run if user or token already exist.
 # Cached values are stored in ~/.config/structured-pdf-pipeline/env and
 # reused on subsequent runs (press Enter to accept).
+=======
+# Credential backends (in priority order):
+#   1. KeePassXC  (if keepassxc-cli is available and KL_KEEPASS_DB exists)
+#   2. GPG        (symmetric AES-256, from kl-input-cache)
+#   3. Plain text (for non-sensitive values like URLs and usernames)
+#   4. Interactive prompt with DurchEntern/WeiterEntern caching
+#
+# Set CREDENTIAL_BACKEND=plain|gpg|keepassxc to force a specific backend.
+# Default: auto-detect (keepassxc > gpg > plain)
+#
+# Idempotent: safe to re-run.
+# Forgejo >= 1.20 and Gitea >= 1.19 both expose the same REST API.
+>>>>>>> ac4e492 (feat(lib/input-cache): add keepassxc backend alongside gpg + plain)
 #
 # Usage:
 #   bash services/forge/create-user.sh
 #   FORGE_TYPE=gitea bash services/forge/create-user.sh
+<<<<<<< HEAD
 
 # ---------------------------------------------------------------------------
 # Config cache
@@ -57,15 +72,76 @@ forge_api() {
   local endpoint="$1"; shift
   curl -s -u "${FORGE_ADMIN_USER}:${FORGE_ADMIN_PASS}" \
     "${FORGE_HOST}/api/v1/${endpoint}" "$@"
+=======
+#   CREDENTIAL_BACKEND=keepassxc bash services/forge/create-user.sh
+
+# ---------------------------------------------------------------------------
+# Locate bootstrap-foundation and source input-cache.sh
+# ---------------------------------------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BOOTSTRAP_ROOT="$SCRIPT_DIR"
+
+if [ -n "${KL_BOOTSTRAP_ROOT:-}" ]; then
+    BOOTSTRAP_ROOT="$KL_BOOTSTRAP_ROOT"
+elif [ -d "$HOME/github/bootstrap-foundation" ]; then
+    BOOTSTRAP_ROOT="$HOME/github/bootstrap-foundation"
+fi
+
+INPUT_CACHE="$BOOTSTRAP_ROOT/lib/input-cache.sh"
+if [ -f "$INPUT_CACHE" ]; then
+    # shellcheck source=/dev/null
+    . "$INPUT_CACHE"
+    HAS_CACHE=1
+else
+    HAS_CACHE=0
+fi
+
+# ---------------------------------------------------------------------------
+# Credential backend detection
+# ---------------------------------------------------------------------------
+: "${KEEPASSXC_CLI:=keepassxc-cli}"
+: "${KL_KEEPASS_DB:=${HOME}/KeePassLatest.kdbx}"
+: "${KL_KEEPASS_GROUP:=bootstrap-foundation/forge}"
+
+if [ -z "${CREDENTIAL_BACKEND:-}" ]; then
+    if command -v "$KEEPASSXC_CLI" >/dev/null 2>&1 && [ -f "$KL_KEEPASS_DB" ]; then
+        CREDENTIAL_BACKEND="keepassxc"
+    elif command -v gpg >/dev/null 2>&1; then
+        CREDENTIAL_BACKEND="gpg"
+    else
+        CREDENTIAL_BACKEND="plain"
+    fi
+fi
+
+echo "  Credential backend: ${CREDENTIAL_BACKEND}"
+
+# ---------------------------------------------------------------------------
+# ask() wrapper: uses input-cache when available, else plain read
+# ---------------------------------------------------------------------------
+ask() {
+    local var_name="$1" prompt="$2" default="$3" sensitivity="${4:-plain}"
+    if [ "$HAS_CACHE" = "1" ]; then
+        kl_read_cached "$var_name" "forge/${var_name}" "$prompt" "$default" "$sensitivity"
+    else
+        printf '%s [%s]: ' "$prompt" "$default" >&2
+        read -r REPLY
+        printf -v "$var_name" '%s' "${REPLY:-$default}"
+    fi
+>>>>>>> ac4e492 (feat(lib/input-cache): add keepassxc backend alongside gpg + plain)
 }
 
 # ---------------------------------------------------------------------------
 # Prompts
 # ---------------------------------------------------------------------------
+<<<<<<< HEAD
+=======
+: "${FORGE_TYPE:=forgejo}"
+>>>>>>> ac4e492 (feat(lib/input-cache): add keepassxc backend alongside gpg + plain)
 FORGE_TYPE_UPPER="$(printf '%s' "$FORGE_TYPE" | tr '[:lower:]' '[:upper:]')"
 
 echo
 echo "=== ${FORGE_TYPE_UPPER} bootstrap: create user + API token ==="
+<<<<<<< HEAD
 echo 'Press Enter to accept the value shown in brackets.'
 echo
 
@@ -79,6 +155,24 @@ ask NEW_USER   'Username'       'structured-pdf'
 ask NEW_EMAIL  'User email'     "${NEW_USER}@localhost"
 ask NEW_PASS   'User password'  'changeme123'
 ask TOKEN_NAME 'Token name'     'structured-pdf-pipeline'
+=======
+echo "  Backend: ${CREDENTIAL_BACKEND}"
+echo '  Press Enter to accept the cached/default value shown in brackets.'
+echo
+
+ask FORGE_HOST        "${FORGE_TYPE_UPPER} base URL (no trailing slash)" 'http://localhost:3000' plain
+ask FORGE_ADMIN_USER  "${FORGE_TYPE_UPPER} admin username"               'admin'                 plain
+ask FORGE_ADMIN_PASS  "${FORGE_TYPE_UPPER} admin password"               'changeme'              "$CREDENTIAL_BACKEND"
+
+echo
+echo '--- New application user ---'
+ask NEW_USER   'Username'      'structured-pdf'      plain
+ask NEW_EMAIL  'User email'    "${NEW_USER}@localhost" plain
+ask NEW_PASS   'User password' 'changeme123'          "$CREDENTIAL_BACKEND"
+ask TOKEN_NAME 'Token name'    'structured-pdf-pipeline' plain
+
+export FORGE_ADMIN_USER FORGE_ADMIN_PASS FORGE_HOST
+>>>>>>> ac4e492 (feat(lib/input-cache): add keepassxc backend alongside gpg + plain)
 
 # ---------------------------------------------------------------------------
 # 1. Create user (idempotent)
@@ -111,7 +205,10 @@ case "$HTTP_STATUS" in
       -u "${NEW_USER}:${NEW_PASS}")
     if [ "$PROBE" = '401' ]; then
       echo "  ERROR: password incorrect for existing user '${NEW_USER}'."
+<<<<<<< HEAD
       echo "  Reset via: PATCH ${FORGE_HOST}/api/v1/admin/users/${NEW_USER}"
+=======
+>>>>>>> ac4e492 (feat(lib/input-cache): add keepassxc backend alongside gpg + plain)
       exit 1
     fi
     echo "  Password OK (probe: ${PROBE})."
@@ -124,7 +221,11 @@ esac
 rm -f /tmp/_forge_create_user.json
 
 # ---------------------------------------------------------------------------
+<<<<<<< HEAD
 # 2. Create token (idempotent – appends timestamp on duplicate)
+=======
+# 2. Create token (idempotent)
+>>>>>>> ac4e492 (feat(lib/input-cache): add keepassxc backend alongside gpg + plain)
 # ---------------------------------------------------------------------------
 echo
 echo "--- Token '${TOKEN_NAME}' ---"
@@ -142,7 +243,11 @@ _do_token() {
 HTTP_STATUS=$(_do_token "$TOKEN_NAME")
 if [ "$HTTP_STATUS" = '422' ]; then
   TOKEN_NAME="${TOKEN_NAME}-$(date +%Y%m%d%H%M%S)"
+<<<<<<< HEAD
   echo "  Name already exists – retrying as '${TOKEN_NAME}'..."
+=======
+  echo "  Name exists – retrying as '${TOKEN_NAME}'..."
+>>>>>>> ac4e492 (feat(lib/input-cache): add keepassxc backend alongside gpg + plain)
   HTTP_STATUS=$(_do_token "$TOKEN_NAME")
 fi
 
@@ -159,9 +264,23 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+<<<<<<< HEAD
 # 3. Output + cache hint
 # ---------------------------------------------------------------------------
 echo
+=======
+# 3. Save token to KeePass / cache
+# ---------------------------------------------------------------------------
+echo
+if [ "$CREDENTIAL_BACKEND" = "keepassxc" ] && command -v "$KEEPASSXC_CLI" >/dev/null 2>&1; then
+  kl_keepass_write "forge/${NEW_USER}_token" "$FORGE_NEW_TOKEN" "$NEW_USER"
+  echo "  Token saved to KeePass: ${KL_KEEPASS_GROUP}/${NEW_USER}_token"
+fi
+
+# ---------------------------------------------------------------------------
+# 4. Output
+# ---------------------------------------------------------------------------
+>>>>>>> ac4e492 (feat(lib/input-cache): add keepassxc backend alongside gpg + plain)
 echo '=== SUCCESS ==='
 echo
 printf '  %-14s %s\n' "${FORGE_TYPE_UPPER} URL:" "$FORGE_HOST"
@@ -169,6 +288,7 @@ printf '  %-14s %s\n' 'Username:'     "$NEW_USER"
 printf '  %-14s %s\n' 'Token name:'   "$TOKEN_NAME"
 printf '  %-14s %s\n' 'Token:'        "$FORGE_NEW_TOKEN"
 echo
+<<<<<<< HEAD
 echo '--- Save token to local config:'
 echo
 printf "  mkdir -p '%s'\n" "$CONFIG_DIR"
@@ -181,3 +301,12 @@ printf 'ENVEOF\n'
 echo
 echo 'Keep the token safe – it will NOT be shown again.'
 echo 'Store it in your password manager (e.g. KeePass) now.'
+=======
+if [ "$CREDENTIAL_BACKEND" = "keepassxc" ]; then
+  echo "  Token saved to KeePass DB: ${KL_KEEPASS_DB}"
+  echo "  Entry: ${KL_KEEPASS_GROUP}/${NEW_USER}_token"
+else
+  echo '  Store the token in your password manager (KeePass) now.'
+  echo '  It will NOT be shown again.'
+fi
+>>>>>>> ac4e492 (feat(lib/input-cache): add keepassxc backend alongside gpg + plain)

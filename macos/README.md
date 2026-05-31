@@ -1,36 +1,61 @@
 # macos/
 
-macOS Bootstrap-Skripte fuer ein neues MacBook.
+macOS Bootstrap-Skripte — alle **idempotent** (beliebig oft aufrufbar).
 
-## Ablauf
+## Quickstart (frisches MacBook)
 
-```
+```bash
 curl -fsSL https://raw.githubusercontent.com/KonradLanz/bootstrap-foundation/main/macos/bootstrap.sh | sh
 ```
 
-Danach:
+Bootstrap erledigt automatisch:
+- Xcode CLT → Homebrew → git + gh + keepassxc
+- `bootstrap-foundation` nach `~/git` klonen
+- brew-tracker + dotfiles-tracker initialisieren
+- brew-hook in `~/.zshrc` eintragen
+
+Danach manuell:
 
 ```bash
 cd ~/git/bootstrap-foundation
 
-# GitHub CLI anmelden
-bash macos/02-gh-auth.sh
+bash macos/02-gh-auth.sh          # gh anmelden + git identity
+bash macos/03-gh-token-keepass.sh # PAT in KeePassXC sichern
+bash macos/04-ssh-key-github.sh   # SSH-Key erzeugen + bei GitHub registrieren
+```
 
-# PAT in KeePassXC speichern
-bash macos/03-gh-token-keepass.sh
+## Idempotenz-Garantien
 
-# SSH-Key erzeugen + bei GitHub registrieren
-bash macos/04-ssh-key-github.sh
+Jeder Schritt prüft vor der Ausführung ob er bereits erledigt wurde:
+
+| Symbol | Bedeutung |
+|---|---|
+| `[--]` | Bereits erledigt, übersprungen |
+| `[>>]` | Wird jetzt ausgeführt |
+| `[OK]` | Erfolgreich abgeschlossen |
+
+Beispiellauf auf bestehendem Mac:
+```
+[--]  Xcode CLT bereits installiert
+[--]  Homebrew bereits installiert
+[--]  git + gh bereits installiert
+[--]  keepassxc bereits installiert
+[--]  Repo aktuell
+[--]  brew-tracker bereits eingerichtet
+[--]  dotfiles-tracker bereits eingerichtet
+[--]  brew-hook bereits in .zshrc
 ```
 
 ## Skripte
 
-| Skript | Was | Als |
-|---|---|---|
-| `bootstrap.sh` | Xcode CLT, Homebrew, git, gh, Repos klonen | normaler User |
-| `02-gh-auth.sh` | gh auth login, git credential helper, git identity | normaler User |
-| `03-gh-token-keepass.sh` | PAT aus gh lesen oder manuell eingeben, in KeePassXC speichern | normaler User |
-| `04-ssh-key-github.sh` | Ed25519 Key erzeugen, macOS Keychain, ~/.ssh/config, bei GitHub registrieren | normaler User |
+| Skript | Was |
+|---|---|
+| `bootstrap.sh` | Alles-in-einem: CLT, Homebrew, git, gh, keepassxc, Repo klonen, Tracker starten |
+| `02-gh-auth.sh` | gh auth login, git credential helper, git identity + defaults |
+| `03-gh-token-keepass.sh` | PAT aus gh lesen oder manuell, in KeePassXC speichern |
+| `04-ssh-key-github.sh` | Ed25519 Key, macOS Keychain, ~/.ssh/config, bei GitHub registrieren, Remote auf SSH umstellen |
+| `brew-tracker/setup.sh` | brew-tracker Repo initialisieren + ersten Brewfile-Snapshot |
+| `dotfiles-tracker/setup.sh` | dotfiles-tracker Repo initialisieren + initiale Dotfiles erfassen |
 
 ## Umgebungsvariablen
 
@@ -41,15 +66,17 @@ bash macos/04-ssh-key-github.sh
 | `KL_KEEPASS_DB` | `~/KeePassLatest.kdbx` | Pfad zur KeePass-Datenbank |
 | `SSH_KEY` | `~/.ssh/id_ed25519` | Pfad zum SSH-Key |
 | `SSH_KEY_TITLE` | `hostname-YYYYMMDD` | Bezeichnung bei GitHub |
+| `BREW_TRACKER_DIR` | `~/git/brew-tracker` | brew-tracker Repo |
+| `DOTFILES_TRACKER_DIR` | `~/git/dotfiles-tracker` | dotfiles-tracker Repo |
 
-## Hinweise
+## Rebase-Workflow
 
-- `~/github` und `~/git` koennen parallel existieren (Skripte nutzen `GIT_BASE`).
-- `03-gh-token-keepass.sh` benoetigt `lib/secret-backends.sh` (im Repo enthalten).
-- `UseKeychain yes` in `~/.ssh/config` speichert die SSH-Passphrase im macOS Keychain;
-  nach Neustart einmal `ssh-add --apple-use-keychain ~/.ssh/id_ed25519` reicht.
-- Bestehende Repos von HTTPS auf SSH umstellen:
-  ```bash
-  git -C ~/git/bootstrap-foundation remote set-url origin \
-    git@github.com:KonradLanz/bootstrap-foundation.git
-  ```
+Nach Bootstrap ist das Repo per SSH erreichbar:
+
+```bash
+cd ~/git/bootstrap-foundation
+git fetch origin
+git checkout feature/enter-once-cache
+git rebase origin/main
+git push --force-with-lease origin feature/enter-once-cache
+```

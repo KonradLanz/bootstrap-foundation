@@ -7,124 +7,145 @@
 #   sh qnap/gitea/bootstrap-gitea.sh [OPTIONS] [DOMAIN] [ADMIN_PASS]
 #
 # Options:
-#   --dry-run           Show what would be done; make no changes
-#   --verbose, -v       Print debug output
-#   --http-port PORT    HTTP port for Gitea      (default: 3000)
-#   --ssh-port  PORT    SSH port for Gitea       (default: 2222)
-#   --postgres          Use shared PostgreSQL container (nas-postgres)
-#   --tls               Enable HTTPS using cert at SSL_CERT_DIR
-#   --ssl-dir PATH      Path to TLS certs        (default: /share/ssl/own.dedyn.io)
+#   --dry-run              Show what would be done; make no changes
+#   --verbose, -v          Print debug output
+#   --http-port PORT       HTTP port for Gitea           (default: 3000)
+#   --ssh-port  PORT       SSH port for Gitea            (default: 2222)
+#   --image-tag TAG        Gitea image tag               (default: latest)
+#   --postgres             Use shared PostgreSQL container (nas-postgres)
+#   --tls                  Enable HTTPS using cert at SSL_CERT_DIR
+#                          Do NOT combine with --haproxy.
+#   --haproxy [IP]         TLS terminated at HAProxy/pfSense.
+#                          Gitea listens on http, ROOT_URL uses https://.
+#                          Binds port to 127.0.0.1 only.
+#                          IP = trusted proxy IP (default: 192.168.1.2)
+#   --ssl-dir PATH         Path to TLS certs            (default: /share/ssl/own.dedyn.io)
+#   --rewrite-compose      Overwrite existing docker-compose.yml
+#   --admin-user NAME      Gitea admin username          (default: gitea-admin)
+#   --admin-email EMAIL    Gitea admin e-mail
+#   --admin-pass PASS      Gitea admin password          (prompted if omitted)
 #
 # Compatible with BusyBox ash (no declare, no [[, no bash arrays).
 ################################################################################
 
-# ── Locate repo root ─────────────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 LIB_DIR="$REPO_ROOT/qnap/lib"
 
-# ── Defaults ──────────────────────────────────────────────────────────────────────────────
+# ── Defaults ──────────────────────────────────────────────────────────────────
 DRY_RUN=0
 VERBOSE=0
 ALWAYS_CONFIRM=0
 GITEA_DOMAIN=""
-GITEA_ADMIN_PASS=""
 HTTP_PORT=3000
 SSH_PORT=2222
+IMAGE_TAG="latest"
 USE_POSTGRES=0
 USE_TLS=0
+USE_HAPROXY=0
+HAPROXY_IP="192.168.1.2"
 SSL_CERT_DIR="/share/ssl/own.dedyn.io"
 SHARED_NETWORK="nas-services"
+REWRITE_COMPOSE=0
+ADMIN_USER="gitea-admin"
+ADMIN_EMAIL=""
+ADMIN_PASS=""
 
-# ── Parse arguments ─────────────────────────────────────────────────────────────────
+# ── Parse arguments ───────────────────────────────────────────────────────────
 while [ $# -gt 0 ]; do
     case "$1" in
-        --dry-run)      DRY_RUN=1;  shift ;;
-        --verbose|-v)   VERBOSE=1;  shift ;;
-        --postgres)     USE_POSTGRES=1; shift ;;
-        --tls)          USE_TLS=1;  shift ;;
-        --http-port)    HTTP_PORT="$2";    shift 2 ;;
-        --ssh-port)     SSH_PORT="$2";     shift 2 ;;
-        --ssl-dir)      SSL_CERT_DIR="$2"; shift 2 ;;
+        --dry-run)         DRY_RUN=1;  shift ;;
+        --verbose|-v)      VERBOSE=1;  shift ;;
+        --postgres)        USE_POSTGRES=1; shift ;;
+        --tls)             USE_TLS=1;  shift ;;
+        --haproxy)
+            USE_HAPROXY=1
+            # optional IP argument
+            case "${2:-}" in
+                -*|'') ;; # next arg is a flag or empty
+                *)  HAPROXY_IP="$2"; shift ;;
+            esac
+            shift ;;
+        --http-port)       HTTP_PORT="$2";      shift 2 ;;
+        --ssh-port)        SSH_PORT="$2";       shift 2 ;;
+        --image-tag)       IMAGE_TAG="$2";      shift 2 ;;
+        --ssl-dir)         SSL_CERT_DIR="$2";   shift 2 ;;
+        --rewrite-compose) REWRITE_COMPOSE=1;   shift ;;
+        --admin-user)      ADMIN_USER="$2";     shift 2 ;;
+        --admin-email)     ADMIN_EMAIL="$2";    shift 2 ;;
+        --admin-pass)      ADMIN_PASS="$2";     shift 2 ;;
         --help|-h)
             cat <<EOF
 bootstrap-gitea.sh — Install Gitea via Docker on QNAP
 
 Usage:
-  $0 [OPTIONS] [DOMAIN] [ADMIN_PASS]
+  $0 [OPTIONS] [DOMAIN]
 
 Options:
-  --dry-run           Show what would be done; make no changes
-  --verbose, -v       Print debug output
-  --http-port PORT    HTTP port (default: 3000)
-  --ssh-port PORT     SSH port  (default: 2222)
-  --postgres          Use shared PostgreSQL (requires bootstrap-postgres.sh run first)
-  --tls               Enable HTTPS with cert from --ssl-dir
-  --ssl-dir PATH      Path containing own.dedyn.io.fullchain + own.dedyn.io.key
-                      (default: /share/ssl/own.dedyn.io)
-  --help, -h          Show this help
-
-Positional:
-  DOMAIN              Public domain or NAS IP (e.g. gitea.own.dedyn.io)
-  ADMIN_PASS          Admin password (prompted if omitted)
+  --dry-run              Show what would be done; make no changes
+  --verbose, -v          Print debug output
+  --http-port PORT       HTTP port (default: 3000)
+  --ssh-port PORT        SSH port  (default: 2222)
+  --image-tag TAG        Gitea image tag (default: latest)
+  --postgres             Use shared PostgreSQL (run bootstrap-postgres.sh first)
+  --tls                  Enable HTTPS — Gitea handles TLS itself
+  --haproxy [IP]         TLS at HAProxy/pfSense (recommended). IP default: 192.168.1.2
+  --ssl-dir PATH         Path to TLS certs (default: /share/ssl/own.dedyn.io)
+  --rewrite-compose      Overwrite existing docker-compose.yml
+  --admin-user NAME      Admin username (default: gitea-admin)
+  --admin-email EMAIL    Admin e-mail
+  --admin-pass PASS      Admin password (prompted if omitted)
+  --help, -h             Show this help
 
 Examples:
   $0 --dry-run
-  $0 192.168.0.215
+  $0 --postgres --haproxy gitea.own.dedyn.io
+  $0 --postgres --haproxy 192.168.1.2 --admin-user myadmin gitea.own.dedyn.io
   $0 --postgres --tls gitea.own.dedyn.io
-  $0 --postgres --tls --ssl-dir /share/ssl/own.dedyn.io gitea.own.dedyn.io
 EOF
             exit 0
             ;;
-        -*)
-            printf "Unknown option: %s\n" "$1" >&2; exit 1 ;;
+        -*) printf "Unknown option: %s\n" "$1" >&2; exit 1 ;;
         *)
-            if [ -z "$GITEA_DOMAIN" ]; then
-                GITEA_DOMAIN="$1"
-            elif [ -z "$GITEA_ADMIN_PASS" ]; then
-                GITEA_ADMIN_PASS="$1"
-            fi
+            [ -z "$GITEA_DOMAIN" ] && GITEA_DOMAIN="$1"
             shift ;;
     esac
 done
 
-# ── Source shared library ────────────────────────────────────────────────────────────────
-if [ -f "$LIB_DIR/docker-service.sh" ]; then
-    . "$LIB_DIR/docker-service.sh"
-else
-    printf "[ERROR] Cannot find %s/docker-service.sh\n" "$LIB_DIR" >&2
-    exit 1
+# ── Source shared library ─────────────────────────────────────────────────────
+[ -f "$LIB_DIR/docker-service.sh" ] || { printf "[ERROR] Cannot find %s/docker-service.sh\n" "$LIB_DIR" >&2; exit 1; }
+. "$LIB_DIR/docker-service.sh"
+
+# ── Validate flag combinations ────────────────────────────────────────────────
+if [ "$USE_TLS" -eq 1 ] && [ "$USE_HAPROXY" -eq 1 ]; then
+    log_error "--tls and --haproxy are mutually exclusive. Use --haproxy when pfSense/HAProxy terminates TLS."
 fi
 
-# ── Banner ──────────────────────────────────────────────────────────────────────────────
+# ── Banner ────────────────────────────────────────────────────────────────────
 printf "\n"
 printf "${BLUE}╔══════════════════════════════════════════════════════╗${NC}\n"
 printf "${BLUE}║  Gitea Bootstrap — QNAP Docker Install               ║${NC}\n"
 printf "${BLUE}╚══════════════════════════════════════════════════════╝${NC}\n"
-[ "$DRY_RUN" -eq 1 ] && \
-    printf "${YELLOW}  *** DRY-RUN mode — no changes will be made ***${NC}\n"
+[ "$DRY_RUN" -eq 1 ]       && printf "${YELLOW}  *** DRY-RUN mode — no changes will be made ***${NC}\n"
+[ "$REWRITE_COMPOSE" -eq 1 ] && printf "${YELLOW}  *** --rewrite-compose: docker-compose.yml will be overwritten ***${NC}\n"
+[ "$USE_HAPROXY" -eq 1 ]   && printf "${YELLOW}  *** HAProxy mode: TLS terminated at %s ***${NC}\n" "$HAPROXY_IP"
 printf "\n"
 
-# ── Step 1: System info ───────────────────────────────────────────────────────────────────
-log_info "[1/6] Collecting system information..."
+# ── Step 1: System info ───────────────────────────────────────────────────────
+log_info "[1/7] Collecting system information..."
 HOSTNAME_VAL=$(hostname 2>/dev/null || printf "qnap-nas")
 OS_NAME="QNAP NAS"
-[ -f /etc/os-release ] && \
-    OS_NAME=$(grep "^PRETTY_NAME" /etc/os-release 2>/dev/null \
-              | cut -d'=' -f2- | tr -d '"')
-CPU_CORES=0
-[ -f /proc/cpuinfo ] && CPU_CORES=$(grep -c "^processor" /proc/cpuinfo)
-RAM_KB=0
-[ -f /proc/meminfo ] && RAM_KB=$(grep "MemTotal:" /proc/meminfo | awk '{print $2}')
+[ -f /etc/os-release ] && OS_NAME=$(grep "^PRETTY_NAME" /etc/os-release 2>/dev/null | cut -d'=' -f2- | tr -d '"')
+CPU_CORES=0; [ -f /proc/cpuinfo ] && CPU_CORES=$(grep -c "^processor" /proc/cpuinfo)
+RAM_KB=0;    [ -f /proc/meminfo ] && RAM_KB=$(grep "MemTotal:" /proc/meminfo | awk '{print $2}')
 RAM_GB=$((RAM_KB / 1024 / 1024))
 log_success "Host : $HOSTNAME_VAL"
 log_success "OS   : $OS_NAME"
 log_success "CPU  : $CPU_CORES cores | RAM: ${RAM_GB} GB"
 
-# ── Step 2: Requirements ────────────────────────────────────────────────────────────────────
-log_info "[2/6] Checking requirements..."
-command -v docker >/dev/null 2>&1 || \
-    log_error "Docker not found. Install QNAP Container Station first."
+# ── Step 2: Requirements ──────────────────────────────────────────────────────
+log_info "[2/7] Checking requirements..."
+command -v docker >/dev/null 2>&1 || log_error "Docker not found. Install QNAP Container Station first."
 
 COMPOSE_CMD=""
 if docker compose version >/dev/null 2>&1; then
@@ -134,12 +155,11 @@ elif command -v docker-compose >/dev/null 2>&1; then
 else
     log_error "Neither 'docker compose' nor 'docker-compose' found."
 fi
-log_success "Requirements satisfied. Compose command: $COMPOSE_CMD"
+log_success "Compose: $COMPOSE_CMD"
 
 if [ "$USE_POSTGRES" -eq 1 ]; then
-    if ! docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^nas-postgres$"; then
-        log_error "nas-postgres container not running. Run bootstrap-postgres.sh first."
-    fi
+    docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^nas-postgres$" || \
+        log_error "nas-postgres not running. Run bootstrap-postgres.sh first."
     log_success "nas-postgres: running"
 fi
 
@@ -147,37 +167,57 @@ if [ "$USE_TLS" -eq 1 ]; then
     CERT_FILE="$SSL_CERT_DIR/own.dedyn.io.fullchain"
     KEY_FILE="$SSL_CERT_DIR/own.dedyn.io.key"
     if [ "$DRY_RUN" -ne 1 ]; then
-        [ -f "$CERT_FILE" ] || log_error "TLS cert not found: $CERT_FILE"
-        [ -f "$KEY_FILE"  ] || log_error "TLS key not found:  $KEY_FILE"
+        if [ ! -f "$CERT_FILE" ] || [ ! -f "$KEY_FILE" ]; then
+            log_error "TLS certs not found at $SSL_CERT_DIR
+  Expected: own.dedyn.io.fullchain  and  own.dedyn.io.key
+  Fix:      Run pfsense/sync-certs-to-nas.sh to push certs from pfSense ACME.
+  Tip:      Use --haproxy instead of --tls to terminate TLS at pfSense/HAProxy."
+        fi
         log_success "TLS certs found: $SSL_CERT_DIR"
     else
         log_dry_run "Would verify TLS certs at $SSL_CERT_DIR"
     fi
 fi
 
-# ── Step 3: Detect management IP ─────────────────────────────────────────────────────
-log_info "[3/6] Detecting management IP..."
+# ── Step 3: Management IP + URLs ─────────────────────────────────────────────
+log_info "[3/7] Detecting management IP..."
 get_management_ip
 
-[ -z "$GITEA_DOMAIN" ] && {
-    GITEA_DOMAIN="$LOCAL_IP"
-    log_warn "No DOMAIN supplied; using IP: $GITEA_DOMAIN"
-}
+[ -z "$GITEA_DOMAIN" ] && { GITEA_DOMAIN="$LOCAL_IP"; log_warn "No DOMAIN supplied; using IP: $GITEA_DOMAIN"; }
 
 if [ "$USE_TLS" -eq 1 ]; then
     PROTOCOL="https"
-    ROOT_URL="https://${GITEA_DOMAIN}"
+    ROOT_URL="https://${GITEA_DOMAIN}/"
+elif [ "$USE_HAPROXY" -eq 1 ]; then
+    PROTOCOL="http"
+    ROOT_URL="https://${GITEA_DOMAIN}/"
 else
     PROTOCOL="http"
-    ROOT_URL="http://${GITEA_DOMAIN}:${HTTP_PORT}"
+    ROOT_URL="http://${GITEA_DOMAIN}:${HTTP_PORT}/"
 fi
 
-# ── Step 4: Select persistent volume ─────────────────────────────────────────────────────
-log_info "[4/6] Selecting persistent volume..."
+# ── Step 4: Admin password ────────────────────────────────────────────────────
+if [ -z "$ADMIN_PASS" ]; then
+    printf "\n${YELLOW}[INPUT]${NC} Gitea admin password for '%s': " "$ADMIN_USER"
+    stty -echo 2>/dev/null || true
+    read -r ADMIN_PASS
+    stty echo 2>/dev/null || true
+    printf "\n"
+fi
+[ -z "$ADMIN_PASS" ] && log_error "Admin password must not be empty."
+[ -z "$ADMIN_EMAIL" ] && ADMIN_EMAIL="${ADMIN_USER}@${GITEA_DOMAIN}"
+
+# ── Step 5: Select persistent volume ─────────────────────────────────────────
+log_info "[4/7] Selecting persistent volume..."
 
 GITEA_BASE=""
 if [ -d /share/docs/gitea ] && [ -f /share/docs/gitea/docker-compose.yml ]; then
-    log_warn "Existing installation detected at /share/docs/gitea — reusing volume."
+    if [ "$REWRITE_COMPOSE" -eq 1 ]; then
+        log_warn "Existing installation at /share/docs/gitea — --rewrite-compose: compose will be regenerated."
+    else
+        log_warn "Existing installation detected at /share/docs/gitea — reusing volume."
+        log_warn "To regenerate docker-compose.yml with new options, add --rewrite-compose"
+    fi
     GITEA_BASE="/share/docs/gitea"
     SELECTED_VOLUME="/share/docs"
 else
@@ -189,75 +229,97 @@ fi
 DATA_DIR="$GITEA_BASE/data"
 CONFIG_DIR="$GITEA_BASE/config"
 COMPOSE_FILE="$GITEA_BASE/docker-compose.yml"
+log_success "Gitea data: $GITEA_BASE"
 
-log_success "Gitea data will be stored at: $GITEA_BASE"
-log_debug   "  data  : $DATA_DIR"
-log_debug   "  config: $CONFIG_DIR"
+# ── Step 6: Generate docker-compose.yml ──────────────────────────────────────
+log_info "[5/7] Creating directories and configuration..."
 
-# ── Step 5: Create directories + generate compose ──────────────────────────────────────
-log_info "[5/6] Creating directories and configuration..."
+if [ -f "$COMPOSE_FILE" ] && [ "$REWRITE_COMPOSE" -eq 0 ]; then
+    log_warn "docker-compose.yml exists — skipping (use --rewrite-compose to overwrite)"
+else
+    confirm_action "Write $COMPOSE_FILE  [DB: $([ "$USE_POSTGRES" -eq 1 ] && echo PostgreSQL || echo SQLite3)  TLS: $([ "$USE_TLS" -eq 1 ] && echo direct || { [ "$USE_HAPROXY" -eq 1 ] && echo haproxy || echo no; })  image: gitea/gitea:${IMAGE_TAG}]" || { log_warn "Aborted."; exit 0; }
 
-confirm_action "Create $GITEA_BASE/{data,config} and docker-compose.yml" || {
-    log_warn "Installation aborted."
-    exit 0
-}
+    execute_cmd "mkdir -p $DATA_DIR"   "mkdir -p \"$DATA_DIR\""
+    execute_cmd "mkdir -p $CONFIG_DIR" "mkdir -p \"$CONFIG_DIR\""
 
-execute_cmd "mkdir -p $DATA_DIR"   "mkdir -p \"$DATA_DIR\""
-execute_cmd "mkdir -p $CONFIG_DIR" "mkdir -p \"$CONFIG_DIR\""
+    # Database block
+    if [ "$USE_POSTGRES" -eq 1 ]; then
+        PG_ENV_FILE="$SELECTED_VOLUME/postgres/.env"
+        PG_SUPERUSER="nasuser"
+        PG_SUPERPASS=""
+        if [ -f "$PG_ENV_FILE" ]; then
+            PG_SUPERUSER=$(grep "^POSTGRES_USER="     "$PG_ENV_FILE" | cut -d'=' -f2-)
+            PG_SUPERPASS=$(grep "^POSTGRES_PASSWORD=" "$PG_ENV_FILE" | cut -d'=' -f2-)
+        fi
+        if [ -z "$PG_SUPERPASS" ]; then
+            printf "\n${YELLOW}[INPUT]${NC} PostgreSQL superuser password for '%s': " "$PG_SUPERUSER"
+            stty -echo 2>/dev/null || true
+            read -r PG_SUPERPASS
+            stty echo 2>/dev/null || true
+            printf "\n"
+        fi
 
-# Build database env block
-if [ "$USE_POSTGRES" -eq 1 ]; then
-    PG_ENV_FILE="$SELECTED_VOLUME/postgres/.env"
-    PG_USER="nasuser"
-    PG_PASS=""
-    if [ -f "$PG_ENV_FILE" ]; then
-        PG_USER=$(grep "^POSTGRES_USER=" "$PG_ENV_FILE" | cut -d'=' -f2-)
-        PG_PASS=$(grep "^POSTGRES_PASSWORD=" "$PG_ENV_FILE" | cut -d'=' -f2-)
-    fi
-    if [ -z "$PG_PASS" ]; then
-        printf "\n${YELLOW}[INPUT]${NC} PostgreSQL password for user '%s': " "$PG_USER"
-        stty -echo 2>/dev/null || true
-        read -r PG_PASS
-        stty echo 2>/dev/null || true
-        printf "\n"
-    fi
-    DB_ENV="      - GITEA__database__DB_TYPE=postgres
+        # Dedicated DB user 'gitea' with password = ADMIN_PASS (changeable)
+        DB_USER="gitea"
+        DB_PASS="$ADMIN_PASS"
+        DB_NAME="gitea"
+
+        # Create db user + database via superuser
+        execute_cmd "Create PostgreSQL user '${DB_USER}'" \
+            "docker exec nas-postgres psql -U ${PG_SUPERUSER} -tc \"SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}'\" | grep -q 1 || docker exec nas-postgres psql -U ${PG_SUPERUSER} -c \"CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASS}';\""
+        execute_cmd "Create database '${DB_NAME}' owned by '${DB_USER}'" \
+            "docker exec nas-postgres psql -U ${PG_SUPERUSER} -tc \"SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'\" | grep -q 1 || docker exec nas-postgres psql -U ${PG_SUPERUSER} -c \"CREATE DATABASE ${DB_NAME} OWNER ${DB_USER} ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE template0;\""
+
+        DB_ENV="      - GITEA__database__DB_TYPE=postgres
       - GITEA__database__HOST=nas-postgres:5432
-      - GITEA__database__NAME=gitea
-      - GITEA__database__USER=${PG_USER}
-      - GITEA__database__PASSWD=${PG_PASS}
+      - GITEA__database__NAME=${DB_NAME}
+      - GITEA__database__USER=${DB_USER}
+      - GITEA__database__PASSWD=${DB_PASS}
       - GITEA__database__SSL_MODE=disable"
-    CREATE_DB_CMD="docker exec nas-postgres psql -U ${PG_USER} -tc \"SELECT 1 FROM pg_database WHERE datname='gitea'\" | grep -q 1 || docker exec nas-postgres psql -U ${PG_USER} -c \"CREATE DATABASE gitea ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE template0;\""
-    execute_cmd "Create gitea database in PostgreSQL" "$CREATE_DB_CMD"
-    NETWORK_SECTION="    networks:
+        NETWORK_SECTION="    networks:
       - ${SHARED_NETWORK}
 
 networks:
   ${SHARED_NETWORK}:
     external: true"
-else
-    DB_ENV="      - GITEA__database__DB_TYPE=sqlite3
+    else
+        DB_ENV="      - GITEA__database__DB_TYPE=sqlite3
       - GITEA__database__PATH=/data/gitea.db"
-    NETWORK_SECTION=""
-fi
+        NETWORK_SECTION=""
+    fi
 
-# Build TLS env block
-if [ "$USE_TLS" -eq 1 ]; then
-    TLS_ENV="      - GITEA__server__PROTOCOL=https
+    # TLS / HAProxy block
+    if [ "$USE_TLS" -eq 1 ]; then
+        PROTO_ENV="      - GITEA__server__PROTOCOL=https
       - GITEA__server__CERT_FILE=/ssl/own.dedyn.io.fullchain
       - GITEA__server__KEY_FILE=/ssl/own.dedyn.io.key"
-    TLS_VOLUME="      - ${SSL_CERT_DIR}:/ssl:ro"
-else
-    TLS_ENV="      - GITEA__server__PROTOCOL=http"
-    TLS_VOLUME=""
-fi
+        TLS_VOLUME="      - ${SSL_CERT_DIR}:/ssl:ro"
+        PORT_BIND="\"${HTTP_PORT}:3000\""
+        PROXY_ENV=""
+    elif [ "$USE_HAPROXY" -eq 1 ]; then
+        PROTO_ENV="      - GITEA__server__PROTOCOL=http"
+        TLS_VOLUME=""
+        PORT_BIND="\"127.0.0.1:${HTTP_PORT}:3000\""
+        PROXY_ENV="      - GITEA__security__REVERSE_PROXY_LIMIT=1
+      - GITEA__security__REVERSE_PROXY_TRUSTED_PROXIES=${HAPROXY_IP}/32
+      - GITEA__security__COOKIE_SECURE=true"
+    else
+        PROTO_ENV="      - GITEA__server__PROTOCOL=http"
+        TLS_VOLUME=""
+        PORT_BIND="\"${HTTP_PORT}:3000\""
+        PROXY_ENV=""
+    fi
 
-COMPOSE_CONTENT="# docker-compose.yml — Gitea on QNAP
-# Generated by bootstrap-gitea.sh — regenerate: sh qnap/gitea/bootstrap-gitea.sh [OPTIONS]
+    COMPOSE_CONTENT="# docker-compose.yml — Gitea on QNAP
+# Generated by bootstrap-gitea.sh
+# Regenerate: sh qnap/gitea/bootstrap-gitea.sh --rewrite-compose [OPTIONS] DOMAIN
+# Image     : gitea/gitea:${IMAGE_TAG}
+# Database  : $([ "$USE_POSTGRES" -eq 1 ] && echo "PostgreSQL (nas-postgres) user=gitea db=gitea" || echo "SQLite3")
+# TLS mode  : $([ "$USE_TLS" -eq 1 ] && echo "direct (Gitea handles TLS)" || { [ "$USE_HAPROXY" -eq 1 ] && echo "haproxy (TLS at ${HAPROXY_IP})" || echo "none (HTTP only)"; })
 
 services:
   gitea:
-    image: gitea/gitea:latest
+    image: gitea/gitea:${IMAGE_TAG}
     container_name: gitea
     restart: unless-stopped
     environment:
@@ -268,11 +330,12 @@ services:
       - GITEA__server__SSH_DOMAIN=${GITEA_DOMAIN}
       - GITEA__server__SSH_PORT=${SSH_PORT}
       - GITEA__server__OFFLINE_MODE=true
-${TLS_ENV}
+${PROTO_ENV}
+${PROXY_ENV}
       # Database
 ${DB_ENV}
-      # Security
-      - GITEA__security__INSTALL_LOCK=false
+      # Security — setup wizard disabled; admin user created via CLI below
+      - GITEA__security__INSTALL_LOCK=true
       # Log
       - GITEA__log__LEVEL=Info
       # User mapping
@@ -285,65 +348,87 @@ ${DB_ENV}
       - /etc/localtime:/etc/localtime:ro
 ${TLS_VOLUME}
     ports:
-      - \"${HTTP_PORT}:3000\"
+      - ${PORT_BIND}
       - \"${SSH_PORT}:22\"
 ${NETWORK_SECTION}"
 
-write_file "$COMPOSE_FILE" "$COMPOSE_CONTENT"
-log_success "docker-compose.yml written: $COMPOSE_FILE"
+    write_file "$COMPOSE_FILE" "$COMPOSE_CONTENT"
+    log_success "docker-compose.yml written: $COMPOSE_FILE"
+fi
 
-# ── Step 6: Pull + start + autorun ───────────────────────────────────────────────────────────
-log_info "[6/6] Pulling Gitea image and starting container..."
+# ── Step 7: Pull + start + create admin user ──────────────────────────────────
+log_info "[6/7] Pulling image and starting container..."
 
-confirm_action "Pull gitea/gitea:latest and start container" || {
-    log_warn "Skipped. Run manually: cd $GITEA_BASE && $COMPOSE_CMD up -d"
-    exit 0
-}
+confirm_action "Pull gitea/gitea:${IMAGE_TAG} and start container" || { log_warn "Skipped."; exit 0; }
 
-execute_cmd "docker pull gitea/gitea:latest" \
-    "docker pull gitea/gitea:latest"
+execute_cmd "docker pull gitea/gitea:${IMAGE_TAG}" \
+    "docker pull gitea/gitea:${IMAGE_TAG}"
 
 execute_cmd "Start Gitea container" \
     "cd \"$GITEA_BASE\" && $COMPOSE_CMD up -d"
+
+# Wait for Gitea to be ready before creating admin user
+log_info "[7/7] Waiting for Gitea to start..."
+if [ "$DRY_RUN" -ne 1 ]; then
+    _i=0
+    while [ "$_i" -lt 30 ]; do
+        if docker exec gitea /usr/local/bin/gitea --version >/dev/null 2>&1; then
+            break
+        fi
+        sleep 2
+        _i=$((_i + 1))
+    done
+    if [ "$_i" -ge 30 ]; then
+        log_warn "Gitea did not become ready in 60s — skipping admin user creation."
+        log_warn "Create manually: docker exec -u git gitea gitea admin user create --admin --username \"${ADMIN_USER}\" --email \"${ADMIN_EMAIL}\" --password \"<pass>\""
+    else
+        log_success "Gitea is ready."
+        if docker exec -u git gitea \
+            gitea admin user create \
+                --admin \
+                --username "$ADMIN_USER" \
+                --email    "$ADMIN_EMAIL" \
+                --password "$ADMIN_PASS" \
+                --must-change-password=false 2>&1 | tee /tmp/gitea-admin-create.log | grep -q "successfully"; then
+            log_success "Admin user '${ADMIN_USER}' created."
+        else
+            _out=$(cat /tmp/gitea-admin-create.log)
+            if printf '%s' "$_out" | grep -qi "already exist"; then
+                log_warn "Admin user '${ADMIN_USER}' already exists — skipping."
+            else
+                log_warn "Could not create admin user automatically."
+                log_warn "Run manually: docker exec -u git gitea gitea admin user create --admin --username \"${ADMIN_USER}\" --email \"${ADMIN_EMAIL}\" --password \"<pass>\" --must-change-password=false"
+            fi
+        fi
+    fi
+else
+    log_dry_run "Would create admin user '${ADMIN_USER}' via: docker exec -u git gitea gitea admin user create ..."
+fi
 
 add_autorun_hook "$GITEA_BASE" "# Gitea Docker service"
 
 if [ -d /opt/bin ] && [ ! -e /opt/bin/bootstrap-gitea.sh ]; then
     execute_cmd "Symlink to /opt/bin/bootstrap-gitea.sh" \
         "ln -sf \"$0\" /opt/bin/bootstrap-gitea.sh"
-    log_success "Symlinked: /opt/bin/bootstrap-gitea.sh"
 fi
 
-# ── Post-install summary ───────────────────────────────────────────────────────────────────
+# ── Summary ───────────────────────────────────────────────────────────────────
 printf "\n"
 printf "${GREEN}╔══════════════════════════════════════════════════════╗${NC}\n"
 printf "${GREEN}║  Gitea Installation Complete                         ║${NC}\n"
 printf "${GREEN}╚══════════════════════════════════════════════════════╝${NC}\n"
 printf "\n"
-if [ "$USE_TLS" -eq 1 ]; then
-    printf "  ${BLUE}Web UI${NC}       : https://%s\n"          "$GITEA_DOMAIN"
-else
-    printf "  ${BLUE}Web UI${NC}       : http://%s:%s\n"        "$LOCAL_IP" "$HTTP_PORT"
-fi
+printf "  ${BLUE}Web UI${NC}       : %s\n"                  "$ROOT_URL"
 printf "  ${BLUE}SSH clone${NC}    : ssh://git@%s:%s\n"    "$GITEA_DOMAIN" "$SSH_PORT"
-if [ "$USE_POSTGRES" -eq 1 ]; then
-    printf "  ${BLUE}Database${NC}     : PostgreSQL (nas-postgres)\n"
-else
-    printf "  ${BLUE}Database${NC}     : SQLite3\n"
-fi
-if [ "$USE_TLS" -eq 1 ]; then
-    printf "  ${BLUE}TLS${NC}          : enabled (%s)\n" "$SSL_CERT_DIR"
-else
-    printf "  ${BLUE}TLS${NC}          : disabled\n"
-fi
+printf "  ${BLUE}Admin user${NC}   : %s  (%s)\n"           "$ADMIN_USER" "$ADMIN_EMAIL"
+printf "  ${BLUE}Image${NC}        : gitea/gitea:%s\n"     "$IMAGE_TAG"
+[ "$USE_POSTGRES" -eq 1 ] && printf "  ${BLUE}Database${NC}     : PostgreSQL — user=gitea db=gitea\n"
+[ "$USE_TLS" -eq 1 ]      && printf "  ${BLUE}TLS${NC}          : direct (%s)\n" "$SSL_CERT_DIR"
+[ "$USE_HAPROXY" -eq 1 ]  && printf "  ${BLUE}TLS${NC}          : via HAProxy at %s (port binds to 127.0.0.1)\n" "$HAPROXY_IP"
 printf "  ${BLUE}Data path${NC}    : %s\n"                  "$GITEA_BASE"
-printf "  ${BLUE}Compose file${NC} : %s\n"                  "$COMPOSE_FILE"
-printf "\n"
-printf "  ${YELLOW}First visit${NC}: open the Web UI to complete the setup wizard.\n"
-printf "  ${YELLOW}Admin user${NC} : created via browser wizard on first run.\n"
 printf "\n"
 if grep -qF "$GITEA_BASE" /etc/config/autorun.sh 2>/dev/null; then
-    printf "  ${GREEN}autorun.sh${NC}: hook present — Gitea starts after every reboot.\n"
+    printf "  ${GREEN}autorun.sh${NC}: hook present.\n"
 else
     printf "  ${YELLOW}autorun.sh${NC}: hook NOT found — add manually:\n"
     printf "    cd \"%s\" && %s up -d\n" "$GITEA_BASE" "$COMPOSE_CMD"

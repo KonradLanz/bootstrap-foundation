@@ -1,0 +1,56 @@
+# ============================================================
+# bootstrap-foundation — .gitignore
+# SECURITY: credential stores and secret material MUST NEVER
+# be committed to this repository.
+# ============================================================
+
+# ── KeePass databases ────────────────────────────────────────
+*.kdbx
+*.kdbx.lock
+*.kdbx.bak
+*.kdbx.tmp
+
+# ── GPG-encrypted secrets ────────────────────────────────────
+*.gpg
+*.asc
+
+# ── Private keys / certificates ──────────────────────────────
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+id_rsa
+id_ed25519
+id_ecdsa
+*.pub          # public keys — commit only if intentional
+
+# ── Environment / secret files ───────────────────────────────
+.env
+.env.*
+!.env.example
+!.env.template
+secrets/
+credentials/
+.secrets/
+
+# ── Local credential cache (kl-input-cache) ──────────────────
+.cache/
+
+# ── macOS metadata ───────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ── Editor / IDE ─────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ── Runtime artefacts ────────────────────────────────────────
+*.log
+*.tmp
+/tmp/

@@ -25,6 +25,9 @@
 : "${KL_KEEPASS_DB:=${HOME}/KeePassLatest.kdbx}"
 : "${KL_KEEPASS_GROUP:=bootstrap-foundation}"
 
+# Script directory — used to locate init-keepass-db.sh
+_SB_LIB_DIR=$(cd "$(dirname "$0")" 2>/dev/null && pwd || printf '%s' "${HOME}")
+
 # Session-level master password (populated once per process, never written to disk)
 KL_KEEPASS_PASS_SESSION=""
 
@@ -44,6 +47,44 @@ sb_detect_backend() {
     else
         printf 'plain'
     fi
+}
+
+# ---------------------------------------------------------------------------
+# sb_ensure_keepass_db
+# Called automatically before the first keepassxc write.
+# If KL_KEEPASS_DB does not exist yet, locates init-keepass-db.sh and runs it.
+# ---------------------------------------------------------------------------
+sb_ensure_keepass_db() {
+    [ -f "$KL_KEEPASS_DB" ] && return 0
+
+    # Locate init-keepass-db.sh relative to this library file.
+    # Callers source this lib from various directories, so we search upward.
+    _init_script=""
+    _search_dir="$_SB_LIB_DIR"
+    _depth=0
+    while [ "$_depth" -lt 5 ]; do
+        _candidate="${_search_dir}/services/forge/init-keepass-db.sh"
+        if [ -f "$_candidate" ]; then
+            _init_script="$_candidate"
+            break
+        fi
+        _parent=$(dirname "$_search_dir")
+        [ "$_parent" = "$_search_dir" ] && break
+        _search_dir="$_parent"
+        _depth=$((_depth + 1))
+    done
+
+    if [ -z "$_init_script" ]; then
+        printf '[WARN]  KeePass-DB nicht gefunden und init-keepass-db.sh nicht lokalisierbar.\n' >&2
+        printf '[WARN]  Bitte manuell ausfuehren: bash services/forge/init-keepass-db.sh\n' >&2
+        return 1
+    fi
+
+    printf '\n[INFO]  KeePass-Datenbank existiert noch nicht.\n' >&2
+    printf '[INFO]  Ersteinrichtung wird gestartet...\n\n' >&2
+    # Export relevant env vars so init script picks them up
+    export KL_KEEPASS_DB KL_KEEPASS_GROUP KEEPASSXC_CLI
+    bash "$_init_script"
 }
 
 # ---------------------------------------------------------------------------
@@ -87,8 +128,11 @@ sb_keepass_read() {
 
 # sb_keepass_write KEY VALUE [USERNAME]
 # Creates or updates the entry for KEY with VALUE.
+# Auto-initialises the DB if it does not exist yet.
 sb_keepass_write() {
     key="$1"; value="$2"; username="${3:-bootstrap}"
+    # Lazy init: create DB on first write if it does not exist
+    sb_ensure_keepass_db || return 1
     _sb_kp_unlock
     entry="$(_sb_kp_entry "$key")"
     exists=$(printf '%s\n' "$KL_KEEPASS_PASS_SESSION" \

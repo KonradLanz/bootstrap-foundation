@@ -89,45 +89,116 @@ confirm_action() {
 }
 
 # ── Management IP detection ───────────────────────────────────────────────────
+# Collects ALL candidate IPs across all interfaces.
+# - Exactly one candidate  → auto-select (no prompt)
+# - More than one          → numbered list, user picks
+# Override: set QNAP_IP=<ip> before sourcing to skip detection entirely.
+
 get_management_ip() {
-    # Sets global LOCAL_IP and QNAP_IFACE.
-    # Skips VPN/container ranges: 10.0.[3-9].x, 10.1x.x, 172.x.x
+    # Sets globals: LOCAL_IP, QNAP_IFACE
     LOCAL_IP=""
     QNAP_IFACE=""
 
+    # ── honour explicit override ──────────────────────────────────────────────
+    if [ -n "${QNAP_IP:-}" ]; then
+        LOCAL_IP="$QNAP_IP"
+        QNAP_IFACE="(override)"
+        log_success "IP: $LOCAL_IP (from QNAP_IP env)"
+        return 0
+    fi
+
+    # ── collect candidates into tempfile  (iface<TAB>ip) ─────────────────────
+    _ip_tmp=$(mktemp /tmp/mgmt_ips.XXXXXX)
+
+    # VPN / container ranges to skip
+    _skip_re='^10\.0\.[3-9]\.|^10\.1[0-9]\.|^172\.'
+
     if command -v ip >/dev/null 2>&1; then
         log_debug "Probing via 'ip addr'"
-        for _iface in qvs0 qvs1 qvs2 qvs3 eth0 eth1 eth2; do
-            _ip=$(ip addr show "$_iface" 2>/dev/null \
-                  | grep "inet " \
-                  | grep -v "scope host\|scope link" \
-                  | awk '{print $2}' | cut -d'/' -f1)
-            if [ -n "$_ip" ]; then
-                if ! printf '%s' "$_ip" | grep -qE \
-                        '^10\.0\.[3-9]\.|^10\.1[0-9]\.|^172\.'; then
-                    LOCAL_IP="$_ip"
-                    QNAP_IFACE="$_iface"
-                    log_success "IP: $LOCAL_IP (iface: $QNAP_IFACE)"
-                    return 0
-                fi
-            fi
+        # Collect all interfaces — NOT a fixed list — via tempfile to avoid
+        # ash pipe-subshell trap ('cmd | while' runs in a subshell in ash).
+        _if_tmp=$(mktemp /tmp/mgmt_ifaces.XXXXXX)
+        ip addr show 2>/dev/null \
+          | awk '/^[0-9]+:/{iface=$2; sub(/:$/,"",iface)}
+                 /inet /{print iface, $2}' > "$_if_tmp"
+        while read -r _iface _cidr; do
+            _ip=$(printf '%s' "$_cidr" | cut -d'/' -f1)
+            # skip loopback and link-local
+            printf '%s' "$_ip" | grep -qE '^127\.|^169\.254\.' && continue
+            # skip VPN/container ranges
+            printf '%s' "$_ip" | grep -qE "$_skip_re" && continue
+            printf '%s\t%s\n' "$_iface" "$_ip" >> "$_ip_tmp"
+        done < "$_if_tmp"
+        rm -f "$_if_tmp"
+    fi
+
+    # Fallback: scan known QNAP iface names when 'ip' is absent / yields nothing
+    if [ ! -s "$_ip_tmp" ] && command -v ifconfig >/dev/null 2>&1; then
+        log_debug "Fallback: ifconfig"
+        for _if in qvs0 qvs1 qvs2 qvs3 eth0 eth1 eth2 eth3; do
+            _ip=$(ifconfig "$_if" 2>/dev/null \
+                  | grep 'inet addr:' | awk -F: '{print $2}' | awk '{print $1}')
+            [ -z "$_ip" ] && \
+            _ip=$(ifconfig "$_if" 2>/dev/null \
+                  | grep 'inet ' | awk '{print $2}' | sed 's/addr://')
+            [ -z "$_ip" ] && continue
+            printf '%s' "$_ip" | grep -qE '^127\.|^169\.254\.' && continue
+            printf '%s' "$_ip" | grep -qE "$_skip_re"           && continue
+            printf '%s\t%s\n' "$_if" "$_ip" >> "$_ip_tmp"
         done
     fi
 
-    if [ -f /etc/config/network ]; then
+    # Config-file fallback
+    if [ ! -s "$_ip_tmp" ] && [ -f /etc/config/network ]; then
         log_debug "Fallback: /etc/config/network"
-        LOCAL_IP=$(grep -E "ipaddr" /etc/config/network 2>/dev/null \
-                   | grep -E "192\.168|10\." \
-                   | grep -v "10\.0\.[3-9]" \
-                   | awk -F'=' '{print $2}' | head -1 \
-                   | tr -d ' "')
-        if [ -n "$LOCAL_IP" ]; then
-            log_success "IP from config: $LOCAL_IP"
-            return 0
-        fi
+        _cf_tmp=$(mktemp /tmp/mgmt_cf.XXXXXX)
+        grep -E "ipaddr" /etc/config/network 2>/dev/null \
+          | grep -E "192\.168|10\." \
+          | grep -v "10\.0\.[3-9]" \
+          | awk -F'=' '{print $2}' | tr -d ' "' > "$_cf_tmp"
+        while read -r _ip; do
+            [ -n "$_ip" ] && printf 'config\t%s\n' "$_ip" >> "$_ip_tmp"
+        done < "$_cf_tmp"
+        rm -f "$_cf_tmp"
     fi
 
-    log_error "Could not determine management IP."
+    if [ ! -s "$_ip_tmp" ]; then
+        rm -f "$_ip_tmp"
+        log_error "Could not determine management IP. Set QNAP_IP=<ip> to override."
+    fi
+
+    _count=$(wc -l < "$_ip_tmp")
+
+    # ── single candidate — use automatically ─────────────────────────────────
+    if [ "$_count" -eq 1 ]; then
+        QNAP_IFACE=$(awk -F'\t' '{print $1}' "$_ip_tmp")
+        LOCAL_IP=$(awk   -F'\t' '{print $2}' "$_ip_tmp")
+        rm -f "$_ip_tmp"
+        log_success "IP: $LOCAL_IP (iface: $QNAP_IFACE)"
+        return 0
+    fi
+
+    # ── multiple candidates — prompt user ─────────────────────────────────────
+    printf "\n${YELLOW}[INPUT]${NC} Multiple network interfaces found. Select management IP:\n\n"
+    _idx=0
+    while IFS='	' read -r _if _ip; do
+        _idx=$((_idx + 1))
+        printf "  ${GREEN}%d)${NC} %-12s %s\n" "$_idx" "$_if" "$_ip"
+    done < "$_ip_tmp"
+    printf "\n${BLUE}[INFO]${NC} Enter number [1-%d] (default: 1): " "$_count"
+    read -r _choice
+    case "$_choice" in ''|0) _choice=1 ;; esac
+    if ! expr "$_choice" : '^[0-9][0-9]*$' >/dev/null 2>&1 \
+        || [ "$_choice" -lt 1 ] || [ "$_choice" -gt "$_count" ]; then
+        log_warn "Invalid choice '$_choice', using 1."
+        _choice=1
+    fi
+    _chosen_line=$(sed -n "${_choice}p" "$_ip_tmp")
+    rm -f "$_ip_tmp"
+    QNAP_IFACE=$(printf '%s' "$_chosen_line" | awk -F'	' '{print $1}')
+    LOCAL_IP=$(printf   '%s' "$_chosen_line" | awk -F'	' '{print $2}')
+    log_success "IP: $LOCAL_IP (iface: $QNAP_IFACE)"
+    return 0
 }
 
 # ── Volume picker ─────────────────────────────────────────────────────────────

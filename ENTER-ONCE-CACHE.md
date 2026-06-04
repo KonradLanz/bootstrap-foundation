@@ -110,3 +110,55 @@ fi
 - [ ] Vaultwarden/Bitwarden CLI (`bw`) als viertes Backend
 - [ ] Windows: `keepassxc-cli` via winget
 - [ ] macOS: `keepassxc-cli` via Homebrew (brew install keepassxc)
+
+---
+
+## 🚧 Offenes Requirement: Cache-Policy / SmartAsk
+
+> **Status: unklar — Notiz für spätere Ausarbeitung**
+
+### Das Spannungsfeld
+
+DurchEntern und WeiterEntern stehen in Spannung zu Prompts, die man
+**nicht** oder nur **bedingt** cachen will:
+
+- Manche Defaults sind **strukturell stabil** (z.B. "fc -W an alle Tabs → J")
+  → sollen gecacht werden, Enter reicht für immer.
+- Manche Defaults sind **kontextuell** (z.B. "Confirm write?")
+  → vielleicht cachen, aber beim ersten Lauf einer Session bewusst bestätigen.
+- Manche Prompts sind **destruktiv oder laufabhängig** (z.B. "Secrets entfernen?")
+  → jeder Lauf ist anders, kein Cache sinnvoll.
+
+### Idee: Cache-Policy als sechster Parameter
+
+```sh
+kl_read_cached VAR KEY PROMPT DEFAULT SENSITIVITY POLICY
+```
+
+Mögliche Policy-Werte (noch nicht entschieden):
+
+| Policy | Verhalten |
+|---|---|
+| `always` | WeiterEntern: Enter = gecachter Wert, keine Rückfrage |
+| `session` | Nur für diese Shell-Session cachen (tmp/pid-basiert), nächster Lauf fragt neu |
+| `forever-ask-first` | Wert wird dauerhaft gecacht, aber **erster Lauf** fragt immer explizit |
+| `always-ask` | Kein Cache, immer frisch fragen (destruktive Aktionen) |
+
+### Langfristige Smartness (Idee, noch vage)
+
+Längerfristig soll hier Intelligenz rein — das System soll selbst erkennen
+oder lernen können, welche Policy für einen Key passt:
+
+- Häufigkeit der Änderung eines Werts → selten geändert = `always` naheliegend
+- Kontext-Signale (destruktiv? idempotent? schreibend?) → Policy-Vorschlag
+- Evtl. explizite Nutzer-Overrides per Config (`~/.config/kl-input-cache/policy.conf`)
+- Zusammenspiel mit `KL_RUN_MODE=unassisted`: Policy `always-ask` muss
+  in unassisted auch einen sinnvollen Fallback haben
+
+### Offene Fragen
+
+- Ist POLICY ein eigener Parameter oder Teil von SENSITIVITY?
+- Wie verhält sich `session`-Cache bei verschachtelten Script-Aufrufen?
+- Soll der Nutzer beim ersten Lauf gefragt werden ob er cachen will
+  ("Antwort merken? [J/n/session]") — oder ist das zu viel Meta?
+- Wie weit soll die Smartness gehen, bevor sie mehr nervt als hilft?

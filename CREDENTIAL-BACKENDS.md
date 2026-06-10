@@ -129,12 +129,86 @@ brew install gnupg
 sudo apt install gnupg2
 ```
 
+## TODO: Secret Detection (git-secrets / trufflehog)
+
+> **Status:** [ ] Noch nicht implementiert
+
+Secret Detection und Secret Storage sind **zwei orthogonale Schichten** –
+sie loesen verschiedene Probleme und ergaenzen sich:
+
+| Schicht | Tool | Zweck |
+|---|---|---|
+| **Praevention** | `git-secrets`, `trufflehog` | Verhindert, dass Secrets in die Git-History gelangen |
+| **Storage** | KeePass + GPG (dieses Dokument) | Haelt Secrets sicher ausserhalb von Git |
+
+KeePass/GPG stellt sicher, dass `.env` nie als Plaintext existiert.
+`git-secrets` / `trufflehog` stellt sicher, dass trotzdem nichts durchrutscht
+(z.B. hartcodierte Tokens im Quellcode, versehentlich eingecheckte Dateien).
+
+### Geplante Integration
+
+#### 1. `git-secrets` als pre-commit Hook (lokal)
+
+```bash
+brew install git-secrets       # macOS
+git secrets --install          # installiert Hook in .git/hooks/pre-commit
+git secrets --register-aws     # kennt AWS-Key-Pattern out-of-the-box
+
+# Projektspezifische Pattern (Gitea-Tokens, etc.)
+git secrets --add 'KL_KEEPASS_PASS\s*=\s*[^$<{]'
+git secrets --add '[0-9a-f]{40}'  # Gitea API-Token-Format
+```
+
+Der Hook blockiert `git commit` wenn gestagede Inhalte ein bekanntes
+Secret-Pattern matchen. Passt zum KeePass-Backend: `.env` landet nie auf
+Disk, aber versehentliches Hineinkopieren in Quellcode wird trotzdem gestoppt.
+
+#### 2. `trufflehog` in CI/CD (serverseitig)
+
+```bash
+# Einmalig lokal – scannt komplette git-History
+trufflehog git file://. --only-verified
+
+# In Gitea Actions / GitHub Actions:
+- name: Secret Scan
+  uses: trufflesecurity/trufflehog@main
+  with:
+    path: ./
+    base: ${{ github.event.repository.default_branch }}
+    head: HEAD
+```
+
+`trufflehog` scannt tiefer als `git-secrets` (inkl. History, Entropie-Analyse)
+und laeuft serverseitig als zweite Sicherheitslinie.
+
+#### 3. Zusammenspiel mit `.env` / KeePass-Workflow
+
+```
+Entwickler tippt Secret einmal  →  sb_write speichert in KeePass/GPG
+                                          │
+                                          ▼
+                               .env wird NICHT auf Disk geschrieben
+                               Secrets leben nur im RAM (export FOO=...)
+                                          │
+                                          ▼
+                               git-secrets pre-commit Hook
+                               blockiert falls doch etwas durchgerutscht ist
+                                          │
+                                          ▼
+                               trufflehog in CI scannt History erneut
+```
+
+Das `.env` bleibt dauerhaft in `.gitignore` – KeePass/GPG macht es unnoetig,
+`git-secrets` / `trufflehog` sind die Sicherheitsnetz-Schicht dahinter.
+
 ## Lizenzen
 
 | Tool | Lizenz | Auswirkung auf deine Skripte |
 |---|---|---|
 | KeePassXC / keepassxc-cli | GPL-2.0+ | Subprocess-Aufruf loest keine GPL-Pflicht aus |
 | GnuPG | GPL-3.0+ | Gleiche Subprocess-Ausnahme (GPL-FAQ) |
+| git-secrets | Apache-2.0 | Keine Einschraenkung fuer Shell-Skripte |
+| trufflehog | AGPL-3.0 | Nur CLI-Aufruf, keine Library-Einbindung – keine Infektion |
 | bootstrap-foundation | MIT | Unveraendert – keine Infektion durch externe Binaries |
 
 Subprocess-Aufrufe via `exec`, `$()` oder Pipes gelten laut GPL-FAQ nicht
@@ -144,3 +218,5 @@ nur aufrufen bleiben unter ihrer eigenen Lizenz (hier: MIT).
 Referenzen:
 - https://www.gnu.org/licenses/gpl-faq.html#MereAggregation
 - https://keepassxc.org/docs/
+- https://github.com/awslabs/git-secrets
+- https://github.com/trufflesecurity/trufflehog

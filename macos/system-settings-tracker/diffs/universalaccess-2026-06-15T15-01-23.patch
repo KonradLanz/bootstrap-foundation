@@ -1,0 +1,80 @@
+--- /Users/koni/.local/system-settings-keeper/universalaccess/previous.plist	2026-06-15 14:47:28
++++ /Users/koni/.local/system-settings-keeper/universalaccess/current.plist	2026-06-15 15:01:26
+@@ -6,38 +6,6 @@
+ 	<dict>
+ 		<key>MouseKeys</key>
+ 		<array>
+-			<dict>
+-				<key>Date</key>
+-				<string>2026-02-09 16:16:15</string>
+-				<key>Reason</key>
+-				<string>LoadingPrefsA</string>
+-				<key>State</key>
+-				<false/>
+-			</dict>
+-			<dict>
+-				<key>Date</key>
+-				<string>2026-02-09 16:16:15</string>
+-				<key>Reason</key>
+-				<string>SessionChangedIsDisabled</string>
+-				<key>State</key>
+-				<false/>
+-			</dict>
+-			<dict>
+-				<key>Date</key>
+-				<string>2026-02-09 16:16:15</string>
+-				<key>Reason</key>
+-				<string>SessionChangedIsDisabled</string>
+-				<key>State</key>
+-				<false/>
+-			</dict>
+-			<dict>
+-				<key>Date</key>
+-				<string>2026-02-09 16:16:15</string>
+-				<key>Reason</key>
+-				<string>SessionChangedIsDisabled</string>
+-				<key>State</key>
+-				<false/>
+-			</dict>
+ 			<dict>
+ 				<key>Date</key>
+ 				<string>2026-02-09 16:16:37</string>
+@@ -406,6 +374,38 @@
+ 				<key>State</key>
+ 				<false/>
+ 			</dict>
++			<dict>
++				<key>Date</key>
++				<string>2026-06-15 15:01:13</string>
++				<key>Reason</key>
++				<string>LoadingPrefsA</string>
++				<key>State</key>
++				<false/>
++			</dict>
++			<dict>
++				<key>Date</key>
++				<string>2026-06-15 15:01:13</string>
++				<key>Reason</key>
++				<string>SessionChangedIsDisabled</string>
++				<key>State</key>
++				<false/>
++			</dict>
++			<dict>
++				<key>Date</key>
++				<string>2026-06-15 15:01:13</string>
++				<key>Reason</key>
++				<string>SessionChangedIsDisabled</string>
++				<key>State</key>
++				<false/>
++			</dict>
++			<dict>
++				<key>Date</key>
++				<string>2026-06-15 15:01:13</string>
++				<key>Reason</key>
++				<string>SessionChangedIsDisabled</string>
++				<key>State</key>
++				<false/>
++			</dict>
+ 		</array>
+ 	</dict>
+ 	<key>closeViewHotkeysEnabled</key>

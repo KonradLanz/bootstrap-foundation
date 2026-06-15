@@ -1,0 +1,39 @@
+--- /Users/koni/.local/system-settings-keeper/dock/previous.plist	2026-06-15 16:23:05
++++ /Users/koni/.local/system-settings-keeper/dock/current.plist	2026-06-15 16:53:06
+@@ -11,7 +11,7 @@
+ 	<key>loc</key>
+ 	<string>de_DE:AT</string>
+ 	<key>mod-count</key>
+-	<integer>389</integer>
++	<integer>390</integer>
+ 	<key>persistent-apps</key>
+ 	<array>
+ 		<dict>
+@@ -971,9 +971,9 @@
+ 				AAAEAAAAAwMAAAAAACAGAAAAAQEAAFN5c3RlbQAADAAA
+ 				AAEBAABBcHBsaWNhdGlvbnMJAAAAAQEAAE5vdGVzLmFw
+ 				cAAAAAwAAAABBgAAEAAAACAAAAA0AAAACAAAAAQDAAAX
+-				AAAA////DwgAAAAEAwAAGQAAAP///w8IAAAABAMAALY3
++				AAAA////DwgAAAAEAwAAGQAAAP///w8IAAAABAMAAII5
+ 				AAD///8PDAAAAAEGAABcAAAAbAAAAHwAAAAIAAAAAAQA
+-				AEHHmi85gAAAGAAAAAECAAACAAAAAAAAAA8AAAAAAAAA
++				AEHH34AvAAAAGAAAAAECAAACAAAAAAAAAA8AAAAAAAAA
+ 				AAAAAAAAAAAIAAAAAQkAAGZpbGU6Ly8vDAAAAAEBAABN
+ 				YWNpbnRvc2ggSEQIAAAABAMAAACA1E5GBwAAJAAAAAEB
+ 				AAA4RUU4Q0JCQS1DNThGLTQwRkEtOTg0MS0zQkQ5NTMz
+@@ -1000,13 +1000,13 @@
+ 				<key>file-label</key>
+ 				<string>Notizen</string>
+ 				<key>file-mod-date</key>
+-				<integer>3853113203</integer>
++				<integer>3862198622</integer>
+ 				<key>file-type</key>
+ 				<integer>41</integer>
+ 				<key>is-beta</key>
+ 				<false/>
+ 				<key>parent-mod-date</key>
+-				<integer>3853113203</integer>
++				<integer>3862198622</integer>
+ 			</dict>
+ 			<key>tile-type</key>
+ 			<string>file-tile</string>

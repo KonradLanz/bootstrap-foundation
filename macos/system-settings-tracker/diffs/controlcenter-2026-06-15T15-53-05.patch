@@ -1,0 +1,32 @@
+--- /Users/koni/.local/system-settings-keeper/controlcenter/previous.plist	2026-06-15 15:23:03
++++ /Users/koni/.local/system-settings-keeper/controlcenter/current.plist	2026-06-15 15:53:05
+@@ -10,9 +10,9 @@
+ 	<date>2026-06-15T13:21:48Z</date>
+ 	<key>LiveActivityState</key>
+ 	<data>
+-	eyJFbmFibGVkIjpmYWxzZSwiQ29tcGFuaW9uUGFpcmVkIjpmYWxzZSwiU2V0dGluZ0Vu
+-	YWJsZWQiOnRydWUsIlNldHRpbmdFdmVyRWRpdGVkIjpmYWxzZSwiTGFzdENoYW5nZURh
+-	dGUiOjgwMzIyMjUwOS4wMzM1NzZ9
++	eyJTZXR0aW5nRXZlckVkaXRlZCI6dHJ1ZSwiTGFzdENoYW5nZURhdGUiOjgwMzIyMzMz
++	NC45NzQ2OCwiRW5hYmxlZCI6ZmFsc2UsIlNldHRpbmdFbmFibGVkIjp0cnVlLCJDb21w
++	YW5pb25QYWlyZWQiOmZhbHNlfQ==
+ 	</data>
+ 	<key>NSStatusItem Preferred Position BentoBox-0</key>
+ 	<real>195</real>
+@@ -28,6 +28,8 @@
+ 	<true/>
+ 	<key>NSStatusItem Visible Sound</key>
+ 	<true/>
++	<key>NSStatusItem VisibleCC AudioVideoModule</key>
++	<true/>
+ 	<key>NSStatusItem VisibleCC Battery</key>
+ 	<true/>
+ 	<key>NSStatusItem VisibleCC BentoBox-0</key>
+@@ -36,5 +38,7 @@
+ 	<true/>
+ 	<key>NSStatusItem VisibleCC WiFi</key>
+ 	<true/>
++	<key>RemoteLiveActivitiesEnabled</key>
++	<true/>
+ </dict>
+ </plist>

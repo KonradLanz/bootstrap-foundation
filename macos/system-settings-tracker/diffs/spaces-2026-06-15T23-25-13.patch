@@ -1,0 +1,127 @@
+--- /Users/koni/.local/system-settings-keeper/spaces/previous.plist	2026-06-15 22:55:11
++++ /Users/koni/.local/system-settings-keeper/spaces/current.plist	2026-06-15 23:25:14
+@@ -7,7 +7,7 @@
+ 		<key>Management Data</key>
+ 		<dict>
+ 			<key>Age</key>
+-			<real>42777.493730833339</real>
++			<real>43807.652782625009</real>
+ 			<key>Management Mode</key>
+ 			<integer>1</integer>
+ 			<key>Monitors</key>
+@@ -48,9 +48,9 @@
+ 							<key>TileLayoutManager</key>
+ 							<dict>
+ 								<key>Age</key>
+-								<real>4250.4971624166683</real>
++								<real>5280.6562085000005</real>
+ 								<key>ConfigAge</key>
+-								<real>4250.4964114166687</real>
++								<real>5280.6554575000009</real>
+ 								<key>Inter-Tile Spacing</key>
+ 								<dict>
+ 									<key>Height</key>
+@@ -61,9 +61,9 @@
+ 								<key>Layout Rect</key>
+ 								<dict>
+ 									<key>Height</key>
+-									<real>982</real>
++									<real>1125</real>
+ 									<key>Width</key>
+-									<real>1512</real>
++									<real>1800</real>
+ 									<key>X</key>
+ 									<real>0.0</real>
+ 									<key>Y</key>
+@@ -162,9 +162,9 @@
+ 											<key>Preferred</key>
+ 											<dict>
+ 												<key>Height</key>
+-												<real>982</real>
++												<real>1125</real>
+ 												<key>Width</key>
+-												<real>1512</real>
++												<real>1800</real>
+ 											</dict>
+ 										</dict>
+ 										<key>TileLimitedClipping</key>
+@@ -172,9 +172,9 @@
+ 										<key>TileRect</key>
+ 										<dict>
+ 											<key>Height</key>
+-											<real>982</real>
++											<real>1125</real>
+ 											<key>Width</key>
+-											<real>1512</real>
++											<real>1800</real>
+ 											<key>X</key>
+ 											<real>0.0</real>
+ 											<key>Y</key>
+@@ -250,7 +250,7 @@
+ 					</array>
+ 				</dict>
+ 				<dict>
+-					<key>Current Space</key>
++					<key>Collapsed Space</key>
+ 					<dict>
+ 						<key>ManagedSpaceID</key>
+ 						<integer>152</integer>
+@@ -263,19 +263,6 @@
+ 					</dict>
+ 					<key>Display Identifier</key>
+ 					<string>E0082153-A717-4FAA-A434-FD3B74607B52</string>
+-					<key>Spaces</key>
+-					<array>
+-						<dict>
+-							<key>ManagedSpaceID</key>
+-							<integer>152</integer>
+-							<key>id64</key>
+-							<integer>152</integer>
+-							<key>type</key>
+-							<integer>0</integer>
+-							<key>uuid</key>
+-							<string>4A1AF523-ED8C-4C88-A622-308A96C1CE89</string>
+-						</dict>
+-					</array>
+ 				</dict>
+ 			</array>
+ 			<key>Primary</key>
+@@ -320,10 +307,10 @@
+ 				<string></string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>1573</integer>
+-					<integer>1570</integer>
+ 					<integer>509</integer>
++					<integer>1699</integer>
+ 					<integer>71</integer>
++					<integer>1570</integer>
+ 					<integer>102</integer>
+ 					<integer>391</integer>
+ 					<integer>778</integer>
+@@ -333,8 +320,8 @@
+ 					<integer>29</integer>
+ 					<integer>28</integer>
+ 					<integer>35</integer>
+-					<integer>1549</integer>
+-					<integer>1547</integer>
++					<integer>1692</integer>
++					<integer>1691</integer>
+ 				</array>
+ 			</dict>
+ 			<dict>
+@@ -368,14 +355,6 @@
+ 					<integer>720</integer>
+ 				</array>
+ 			</dict>
+-			<dict>
+-				<key>name</key>
+-				<string>4A1AF523-ED8C-4C88-A622-308A96C1CE89</string>
+-				<key>windows</key>
+-				<array>
+-					<integer>1483</integer>
+-				</array>
+-			</dict>
+ 		</array>
+ 	</dict>
+ 	<key>app-bindings</key>

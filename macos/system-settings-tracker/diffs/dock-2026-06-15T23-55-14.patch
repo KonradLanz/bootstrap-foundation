@@ -1,0 +1,11 @@
+--- /Users/koni/.local/system-settings-keeper/dock/previous.plist	2026-06-15 23:25:14
++++ /Users/koni/.local/system-settings-keeper/dock/current.plist	2026-06-15 23:55:14
+@@ -7,7 +7,7 @@
+ 		<real>803222584.251984</real>
+ 	</array>
+ 	<key>lastShowIndicatorTime</key>
+-	<real>803251028.35411</real>
++	<real>803251594.19667602</real>
+ 	<key>loc</key>
+ 	<string>de_DE:AT</string>
+ 	<key>mod-count</key>

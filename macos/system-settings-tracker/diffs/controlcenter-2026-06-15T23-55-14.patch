@@ -1,0 +1,11 @@
+--- /Users/koni/.local/system-settings-keeper/controlcenter/previous.plist	2026-06-15 23:25:14
++++ /Users/koni/.local/system-settings-keeper/controlcenter/current.plist	2026-06-15 23:55:14
+@@ -3,7 +3,7 @@
+ <plist version="1.0">
+ <dict>
+ 	<key>AutoHideMenuBarOption</key>
+-	<integer>2</integer>
++	<integer>3</integer>
+ 	<key>ControlCenterDisplayableChronoControlsProviderConfiguration</key>
+ 	<data>
+ 	eyJDb250cm9scyI6W3siT3ZlcnJpZGVTaXplRm9yTWVudUJhciI6ZmFsc2UsIkNvbnRy

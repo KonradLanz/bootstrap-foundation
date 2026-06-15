@@ -1,0 +1,14 @@
+2026-06-15T14-47-28 INIT controlcenter
+2026-06-15T14-47-28 INIT dock
+2026-06-15T14-47-28 INIT finder
+2026-06-15T14-47-28 INIT universalaccess
+2026-06-15T14-47-28 INIT screensaver
+2026-06-15T14-47-28 INIT desktopservices
+2026-06-15T14-47-28 INIT networkbrowser
+2026-06-15T14-47-28 INIT spaces
+2026-06-15T14-47-28 INIT HIToolbox
+2026-06-15T14-47-28 INIT trackpad
+2026-06-15T14-47-28 INIT multitouch
+2026-06-15T14-47-28 INIT powermanagement
+2026-06-15T14-47-28 INIT systempreferences
+2026-06-15T14-47-32 CHANGED systempreferences 12 lines

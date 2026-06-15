@@ -1,0 +1,12 @@
+--- /Users/koni/.local/system-settings-keeper/systempreferences/previous.plist	2026-06-15 14:47:32
++++ /Users/koni/.local/system-settings-keeper/systempreferences/current.plist	2026-06-15 14:47:33
+@@ -1,8 +1,5 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+ <plist version="1.0">
+-<dict>
+-	<key>ThirdPartyCount</key>
+-	<integer>0</integer>
+-</dict>
++<dict/>
+ </plist>

@@ -1,0 +1,315 @@
+--- /Users/koni/.local/system-settings-keeper/finder/previous.plist	2026-06-15 23:25:14
++++ /Users/koni/.local/system-settings-keeper/finder/current.plist	2026-06-15 23:55:14
+@@ -9,7 +9,7 @@
+ 		<key>ExtendedListViewSettingsV2</key>
+ 		<dict>
+ 			<key>axTextSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>calculateAllSizes</key>
+ 			<false/>
+ 			<key>columns</key>
+@@ -166,7 +166,7 @@
+ 			<key>sortColumn</key>
+ 			<string>name</string>
+ 			<key>textSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>useRelativeDates</key>
+ 			<true/>
+ 			<key>viewOptionsVersion</key>
+@@ -177,7 +177,7 @@
+ 			<key>arrangeBy</key>
+ 			<string>name</string>
+ 			<key>axTextSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>backgroundColorBlue</key>
+ 			<real>1</real>
+ 			<key>backgroundColorGreen</key>
+@@ -193,7 +193,7 @@
+ 			<key>gridSpacing</key>
+ 			<real>54</real>
+ 			<key>iconSize</key>
+-			<real>96</real>
++			<real>80</real>
+ 			<key>labelOnBottom</key>
+ 			<true/>
+ 			<key>scrollPositionX</key>
+@@ -205,14 +205,14 @@
+ 			<key>showItemInfo</key>
+ 			<false/>
+ 			<key>textSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>viewOptionsVersion</key>
+ 			<integer>1</integer>
+ 		</dict>
+ 		<key>ListViewSettings</key>
+ 		<dict>
+ 			<key>axTextSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>calculateAllSizes</key>
+ 			<false/>
+ 			<key>columns</key>
+@@ -328,7 +328,7 @@
+ 			<key>sortColumn</key>
+ 			<string>name</string>
+ 			<key>textSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>useRelativeDates</key>
+ 			<true/>
+ 			<key>viewOptionsVersion</key>
+@@ -361,7 +361,7 @@
+ 			<key>arrangeBy</key>
+ 			<string>none</string>
+ 			<key>axTextSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>backgroundColorBlue</key>
+ 			<real>1</real>
+ 			<key>backgroundColorGreen</key>
+@@ -377,7 +377,7 @@
+ 			<key>gridSpacing</key>
+ 			<real>54</real>
+ 			<key>iconSize</key>
+-			<real>96</real>
++			<real>80</real>
+ 			<key>labelOnBottom</key>
+ 			<true/>
+ 			<key>showIconPreview</key>
+@@ -385,7 +385,7 @@
+ 			<key>showItemInfo</key>
+ 			<false/>
+ 			<key>textSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>viewOptionsVersion</key>
+ 			<integer>1</integer>
+ 		</dict>
+@@ -1948,7 +1948,7 @@
+ 		<string>Grau</string>
+ 	</array>
+ 	<key>FontSizeCategory</key>
+-	<string>XXL</string>
++	<string>L</string>
+ 	<key>GoToField</key>
+ 	<string>ko</string>
+ 	<key>GoToFieldHistory</key>
+@@ -2003,7 +2003,7 @@
+ 		<key>ExtendedListViewSettingsV2</key>
+ 		<dict>
+ 			<key>axTextSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>calculateAllSizes</key>
+ 			<false/>
+ 			<key>columns</key>
+@@ -2160,7 +2160,7 @@
+ 			<key>sortColumn</key>
+ 			<string>kind</string>
+ 			<key>textSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>useRelativeDates</key>
+ 			<true/>
+ 			<key>viewOptionsVersion</key>
+@@ -2169,7 +2169,7 @@
+ 		<key>ListViewSettings</key>
+ 		<dict>
+ 			<key>axTextSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>calculateAllSizes</key>
+ 			<false/>
+ 			<key>columns</key>
+@@ -2285,7 +2285,7 @@
+ 			<key>sortColumn</key>
+ 			<string>kind</string>
+ 			<key>textSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>useRelativeDates</key>
+ 			<true/>
+ 			<key>viewOptionsVersion</key>
+@@ -2349,7 +2349,7 @@
+ 		<key>ExtendedListViewSettingsV2</key>
+ 		<dict>
+ 			<key>axTextSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>calculateAllSizes</key>
+ 			<false/>
+ 			<key>columns</key>
+@@ -2502,7 +2502,7 @@
+ 			<key>sortColumn</key>
+ 			<string>dateLastOpened</string>
+ 			<key>textSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>useRelativeDates</key>
+ 			<true/>
+ 			<key>viewOptionsVersion</key>
+@@ -2511,7 +2511,7 @@
+ 		<key>ListViewSettings</key>
+ 		<dict>
+ 			<key>axTextSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>calculateAllSizes</key>
+ 			<false/>
+ 			<key>columns</key>
+@@ -2623,7 +2623,7 @@
+ 			<key>sortColumn</key>
+ 			<string>dateLastOpened</string>
+ 			<key>textSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>useRelativeDates</key>
+ 			<true/>
+ 			<key>viewOptionsVersion</key>
+@@ -2650,7 +2650,7 @@
+ 		<key>ExtendedListViewSettingsV2</key>
+ 		<dict>
+ 			<key>axTextSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>calculateAllSizes</key>
+ 			<false/>
+ 			<key>columns</key>
+@@ -2803,7 +2803,7 @@
+ 			<key>sortColumn</key>
+ 			<string>spotlightMenuOrder</string>
+ 			<key>textSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>useRelativeDates</key>
+ 			<true/>
+ 			<key>viewOptionsVersion</key>
+@@ -2812,7 +2812,7 @@
+ 		<key>ListViewSettings</key>
+ 		<dict>
+ 			<key>axTextSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>calculateAllSizes</key>
+ 			<false/>
+ 			<key>columns</key>
+@@ -2924,7 +2924,7 @@
+ 			<key>sortColumn</key>
+ 			<string>name</string>
+ 			<key>textSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>useRelativeDates</key>
+ 			<true/>
+ 			<key>viewOptionsVersion</key>
+@@ -3001,7 +3001,7 @@
+ 			<key>ColumnWidth</key>
+ 			<integer>245</integer>
+ 			<key>FontSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>PreviewDisclosureState</key>
+ 			<true/>
+ 			<key>SharedArrangeBy</key>
+@@ -3017,7 +3017,7 @@
+ 		<key>ExtendedListViewSettingsV2</key>
+ 		<dict>
+ 			<key>axTextSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>calculateAllSizes</key>
+ 			<false/>
+ 			<key>columns</key>
+@@ -3140,7 +3140,7 @@
+ 			<key>sortColumn</key>
+ 			<string>name</string>
+ 			<key>textSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>useRelativeDates</key>
+ 			<true/>
+ 			<key>viewOptionsVersion</key>
+@@ -3162,7 +3162,7 @@
+ 			<key>arrangeBy</key>
+ 			<string>none</string>
+ 			<key>axTextSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>backgroundColorBlue</key>
+ 			<real>1</real>
+ 			<key>backgroundColorGreen</key>
+@@ -3178,7 +3178,7 @@
+ 			<key>gridSpacing</key>
+ 			<real>54</real>
+ 			<key>iconSize</key>
+-			<real>96</real>
++			<real>80</real>
+ 			<key>labelOnBottom</key>
+ 			<true/>
+ 			<key>showIconPreview</key>
+@@ -3186,14 +3186,14 @@
+ 			<key>showItemInfo</key>
+ 			<false/>
+ 			<key>textSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>viewOptionsVersion</key>
+ 			<integer>1</integer>
+ 		</dict>
+ 		<key>ListViewSettings</key>
+ 		<dict>
+ 			<key>axTextSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>calculateAllSizes</key>
+ 			<false/>
+ 			<key>columns</key>
+@@ -3305,7 +3305,7 @@
+ 			<key>sortColumn</key>
+ 			<string>name</string>
+ 			<key>textSize</key>
+-			<real>16</real>
++			<real>14</real>
+ 			<key>useRelativeDates</key>
+ 			<true/>
+ 			<key>viewOptionsVersion</key>
+@@ -3322,8 +3322,6 @@
+ 		<integer>1</integer>
+ 		<key>ExtendedListViewSettingsV2</key>
+ 		<dict>
+-			<key>axTextSize</key>
+-			<real>16</real>
+ 			<key>calculateAllSizes</key>
+ 			<false/>
+ 			<key>columns</key>
+@@ -3480,7 +3478,7 @@
+ 			<key>sortColumn</key>
+ 			<string>name</string>
+ 			<key>textSize</key>
+-			<real>16</real>
++			<real>13</real>
+ 			<key>useRelativeDates</key>
+ 			<true/>
+ 			<key>viewOptionsVersion</key>
+@@ -3488,8 +3486,6 @@
+ 		</dict>
+ 		<key>ListViewSettings</key>
+ 		<dict>
+-			<key>axTextSize</key>
+-			<real>16</real>
+ 			<key>calculateAllSizes</key>
+ 			<false/>
+ 			<key>columns</key>
+@@ -3605,7 +3601,7 @@
+ 			<key>sortColumn</key>
+ 			<string>name</string>
+ 			<key>textSize</key>
+-			<real>16</real>
++			<real>13</real>
+ 			<key>useRelativeDates</key>
+ 			<true/>
+ 			<key>viewOptionsVersion</key>

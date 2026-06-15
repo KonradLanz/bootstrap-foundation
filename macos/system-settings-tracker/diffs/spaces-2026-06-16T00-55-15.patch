@@ -1,0 +1,41 @@
+--- /Users/koni/.local/system-settings-keeper/spaces/previous.plist	2026-06-16 00:25:15
++++ /Users/koni/.local/system-settings-keeper/spaces/current.plist	2026-06-16 00:55:15
+@@ -7,7 +7,7 @@
+ 		<key>Management Data</key>
+ 		<dict>
+ 			<key>Age</key>
+-			<real>48661.350985041674</real>
++			<real>48913.576492541673</real>
+ 			<key>Management Mode</key>
+ 			<integer>1</integer>
+ 			<key>Monitors</key>
+@@ -48,9 +48,9 @@
+ 							<key>TileLayoutManager</key>
+ 							<dict>
+ 								<key>Age</key>
+-								<real>10134.35441204167</real>
++								<real>10386.579922750003</real>
+ 								<key>ConfigAge</key>
+-								<real>10134.35366104167</real>
++								<real>10386.579171750003</real>
+ 								<key>Inter-Tile Spacing</key>
+ 								<dict>
+ 									<key>Height</key>
+@@ -512,14 +512,13 @@
+ 				<string></string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>3234</integer>
+-					<integer>2833</integer>
+-					<integer>1570</integer>
++					<integer>3279</integer>
+ 					<integer>509</integer>
++					<integer>71</integer>
++					<integer>1570</integer>
+ 					<integer>657</integer>
+ 					<integer>102</integer>
+ 					<integer>49</integer>
+-					<integer>71</integer>
+ 					<integer>312</integer>
+ 					<integer>54</integer>
+ 					<integer>686</integer>

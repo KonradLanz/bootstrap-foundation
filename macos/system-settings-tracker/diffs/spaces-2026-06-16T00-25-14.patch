@@ -1,0 +1,78 @@
+--- /Users/koni/.local/system-settings-keeper/spaces/previous.plist	2026-06-15 23:55:14
++++ /Users/koni/.local/system-settings-keeper/spaces/current.plist	2026-06-16 00:25:15
+@@ -7,7 +7,7 @@
+ 		<key>Management Data</key>
+ 		<dict>
+ 			<key>Age</key>
+-			<real>45774.162705250012</real>
++			<real>48661.350985041674</real>
+ 			<key>Management Mode</key>
+ 			<integer>1</integer>
+ 			<key>Monitors</key>
+@@ -48,9 +48,9 @@
+ 							<key>TileLayoutManager</key>
+ 							<dict>
+ 								<key>Age</key>
+-								<real>7247.166130583335</real>
++								<real>10134.35441204167</real>
+ 								<key>ConfigAge</key>
+-								<real>7247.1653795833354</real>
++								<real>10134.35366104167</real>
+ 								<key>Inter-Tile Spacing</key>
+ 								<dict>
+ 									<key>Height</key>
+@@ -512,16 +512,16 @@
+ 				<string></string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>2498</integer>
++					<integer>3234</integer>
+ 					<integer>2833</integer>
+-					<integer>49</integer>
++					<integer>1570</integer>
+ 					<integer>509</integer>
++					<integer>657</integer>
+ 					<integer>102</integer>
+-					<integer>1570</integer>
++					<integer>49</integer>
+ 					<integer>71</integer>
+ 					<integer>312</integer>
+ 					<integer>54</integer>
+-					<integer>657</integer>
+ 					<integer>686</integer>
+ 					<integer>391</integer>
+ 					<integer>778</integer>
+@@ -531,8 +531,7 @@
+ 					<integer>29</integer>
+ 					<integer>28</integer>
+ 					<integer>35</integer>
+-					<integer>2740</integer>
+-					<integer>2739</integer>
++					<integer>3220</integer>
+ 				</array>
+ 			</dict>
+ 			<dict>
+@@ -540,7 +539,6 @@
+ 				<string>E8405298-BFC4-4AA0-B3D8-2677862EB7B0</string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>2498</integer>
+ 					<integer>312</integer>
+ 					<integer>30</integer>
+ 					<integer>29</integer>
+@@ -553,7 +551,6 @@
+ 				<string>80322BAC-FF49-4FFB-BB2E-0F22F26615E4</string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>2498</integer>
+ 					<integer>312</integer>
+ 					<integer>30</integer>
+ 					<integer>29</integer>
+@@ -566,7 +563,6 @@
+ 				<string>EFD4DBC3-0500-4A30-AD5B-A3B376C637EA</string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>2498</integer>
+ 					<integer>1038</integer>
+ 					<integer>720</integer>
+ 				</array>

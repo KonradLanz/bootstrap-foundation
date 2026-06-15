@@ -1,0 +1,90 @@
+--- /Users/koni/.local/system-settings-keeper/spaces/previous.plist	2026-06-15 15:01:26
++++ /Users/koni/.local/system-settings-keeper/spaces/current.plist	2026-06-15 15:23:05
+@@ -7,7 +7,7 @@
+ 		<key>Management Data</key>
+ 		<dict>
+ 			<key>Age</key>
+-			<real>29867.335053250004</real>
++			<real>30715.596483625006</real>
+ 			<key>Management Mode</key>
+ 			<integer>1</integer>
+ 			<key>Monitors</key>
+@@ -122,25 +122,29 @@
+ 				<string></string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>450</integer>
+-					<integer>65</integer>
+-					<integer>303</integer>
+-					<integer>298</integer>
+-					<integer>58</integer>
+-					<integer>97</integer>
+-					<integer>116</integer>
+-					<integer>225</integer>
+-					<integer>121</integer>
+-					<integer>112</integer>
+-					<integer>96</integer>
+-					<integer>89</integer>
+-					<integer>54</integer>
+-					<integer>111</integer>
+-					<integer>76</integer>
+-					<integer>75</integer>
+-					<integer>74</integer>
+-					<integer>28</integer>
+-					<integer>59</integer>
++					<integer>980</integer>
++					<integer>546</integer>
++					<integer>612</integer>
++					<integer>562</integer>
++					<integer>561</integer>
++					<integer>497</integer>
++					<integer>491</integer>
++					<integer>501</integer>
++					<integer>496</integer>
++					<integer>493</integer>
++					<integer>560</integer>
++					<integer>584</integer>
++					<integer>587</integer>
++					<integer>552</integer>
++					<integer>543</integer>
++					<integer>538</integer>
++					<integer>502</integer>
++					<integer>553</integer>
++					<integer>537</integer>
++					<integer>536</integer>
++					<integer>535</integer>
++					<integer>490</integer>
++					<integer>499</integer>
+ 				</array>
+ 			</dict>
+ 			<dict>
+@@ -148,10 +152,10 @@
+ 				<string>E8405298-BFC4-4AA0-B3D8-2677862EB7B0</string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>76</integer>
+-					<integer>75</integer>
+-					<integer>74</integer>
+-					<integer>28</integer>
++					<integer>537</integer>
++					<integer>536</integer>
++					<integer>535</integer>
++					<integer>490</integer>
+ 				</array>
+ 			</dict>
+ 			<dict>
+@@ -159,10 +163,10 @@
+ 				<string>80322BAC-FF49-4FFB-BB2E-0F22F26615E4</string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>76</integer>
+-					<integer>75</integer>
+-					<integer>74</integer>
+-					<integer>28</integer>
++					<integer>537</integer>
++					<integer>536</integer>
++					<integer>535</integer>
++					<integer>490</integer>
+ 				</array>
+ 			</dict>
+ 		</array>

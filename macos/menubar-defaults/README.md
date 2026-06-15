@@ -22,13 +22,17 @@ BentoBox überschreibt `NSStatusItem Visible Item-2` und `Item-3` nach SystemUI
 | Datei | Funktion |
 |---|---|
 | `apply.sh` | Idempotenter Fix — prüft aktuellen Zustand, schreibt nur wenn nötig |
+| `20260615_fix_notch_menubar_oneshot.sh` | Aggressiver Einmal-Fix inkl. Session-/Control-Center-Reset für hartnäckige Notch-Flanken-Probleme |
 | `restore.sh` | Rollback — stellt macOS-Defaults wieder her |
 
 ## Verwendung
 
 ```zsh
-# Fix anwenden (idempotent, sicher mehrfach ausführbar)
+# Standard-Fix anwenden (idempotent, sicher mehrfach ausführbar)
 bash ~/git/bootstrap-foundation/macos/menubar-defaults/apply.sh
+
+# Aggressiver Einmal-Fix für Notch-Flanken / leere Bereiche links und rechts der Notch
+bash ~/git/bootstrap-foundation/macos/menubar-defaults/20260615_fix_notch_menubar_oneshot.sh
 
 # Rollback
 bash ~/git/bootstrap-foundation/macos/menubar-defaults/restore.sh
@@ -36,11 +40,19 @@ bash ~/git/bootstrap-foundation/macos/menubar-defaults/restore.sh
 
 ## Integration in bootstrap.sh
 
-Optional in `macos/bootstrap.sh` einbinden:
+Bereits in `macos/bootstrap.sh` eingebunden:
 
 ```zsh
-bash "$(dirname "$0")/menubar-defaults/apply.sh"
+bash "${DIR}/macos/menubar-defaults/apply.sh"
 ```
+
+Der aggressive One-Shot-Fix bleibt bewusst **manuell**, weil er `ControlCenter` / `SystemUIServer` hart neu startet und je nach Zustand einen Logout erforderlich machen kann.
+
+## Notch-Flanken
+
+Wenn **rechts und links der Notch** trotz gesetzter `NSStatusItem Visible ... = 1` leer bleiben, reicht `apply.sh` unter Umständen nicht aus. In diesem Fall zuerst den aggressiven One-Shot-Fix verwenden; der setzt zusätzlich Spacing, Preferred Positions und relevante Control-Center-Zustände zurück.
+
+Danach gilt weiter: Wenn BentoBox die Sichtbarkeit nach Restarts erneut überschreibt, müssen die betroffenen Icons in BentoBox dauerhaft auf "Immer in Menüleiste anzeigen" gestellt werden.
 
 ## Dauerhafter Fix
 

@@ -17,11 +17,13 @@ NEEDS_RESTART=0
 apply_bool() {
   local domain="$1" key="$2" target="$3"
   local current
-  current=$(defaults read "$domain" "$key" 2>/dev/null || echo "missing")
+  current=$(defaults read "$domain" "$key" 2>/dev/null) || current="missing"
   if [[ "$current" == "$target" || ( "$target" == "1" && "$current" == "true" ) ]]; then
-    print_status "--" "$key bereits korrekt ($current), übersprungen."
+    print_status "--" "$key bereits korrekt ($current), übersprungen."
   else
-    defaults write "$domain" "$key" -bool "$([ "$target" = '1' ] && echo true || echo false)"
+    local boolval="false"
+    [[ "$target" == "1" ]] && boolval="true"
+    defaults write "$domain" "$key" -bool "$boolval"
     print_status ">>" "$key gesetzt → $target"
     NEEDS_RESTART=1
   fi
@@ -30,9 +32,9 @@ apply_bool() {
 apply_int_global() {
   local key="$1" target="$2"
   local current
-  current=$(defaults read -g "$key" 2>/dev/null || echo "missing")
+  current=$(defaults read -g "$key" 2>/dev/null) || current="missing"
   if [[ "$current" == "$target" ]]; then
-    print_status "--" "$key bereits korrekt ($current), übersprungen."
+    print_status "--" "$key bereits korrekt ($current), übersprungen."
   else
     defaults write -g "$key" -int "$target"
     print_status ">>" "$key gesetzt → $target"
@@ -51,6 +53,11 @@ apply_bool "$DOMAIN" "NSStatusItem VisibleCC Battery"    1
 apply_bool "$DOMAIN" "NSStatusItem VisibleCC Clock"      1
 apply_bool "$DOMAIN" "NSStatusItem VisibleCC WiFi"       1
 apply_int_global "NSStatusItemSpacing" "$SPACING_TARGET"
+apply_bool "$DOMAIN" "NSStatusItem Visible Bluetooth" 1
+apply_bool "$DOMAIN" "NSStatusItem Visible Display" 1
+apply_bool "$DOMAIN" "NSStatusItem Visible FocusModes" 1
+apply_bool "$DOMAIN" "NSStatusItem Visible NowPlaying" 1
+apply_bool "$DOMAIN" "NSStatusItem Visible Sound" 1
 
 if [[ $NEEDS_RESTART -eq 1 ]]; then
   print_status ">>" "Änderungen erkannt → SystemUIServer neu starten..."
@@ -60,3 +67,7 @@ else
 fi
 
 print_status "OK" "=== menubar-defaults/apply.sh abgeschlossen ==="
+
+# After fix: snapshot controlcenter domain so the change is tracked
+TRACKER="$(dirname "$0")/../system-settings-tracker/track.sh"
+[[ -x "$TRACKER" ]] && zsh "$TRACKER" || true

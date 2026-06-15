@@ -90,7 +90,7 @@ echo ''
 bash "${DIR}/macos/foundations/tools.sh"
 
 # 6) Tracker einrichten
-printf '[6/7] Tracker einrichten... '
+printf '[6/8] Tracker einrichten... '
 echo ''
 
 BT_DIR="${GIT_BASE}/brew-tracker"
@@ -119,7 +119,12 @@ else
   _ok 'brew-hook in .zshrc eingetragen'
 fi
 
-# 7) Fertig
+# 7) Menu-Bar / Notch Defaults
+printf '[7/8] Menu-Bar / Notch Defaults... '
+echo ''
+bash "${DIR}/macos/menubar-defaults/apply.sh"
+
+# 8) Fertig
 echo ''
 echo '================================================'
 echo '  macOS Bootstrap abgeschlossen!'

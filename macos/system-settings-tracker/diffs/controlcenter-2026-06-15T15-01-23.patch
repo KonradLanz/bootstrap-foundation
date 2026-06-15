@@ -1,0 +1,25 @@
+--- /Users/koni/.local/system-settings-keeper/controlcenter/previous.plist	2026-06-15 14:47:28
++++ /Users/koni/.local/system-settings-keeper/controlcenter/current.plist	2026-06-15 15:01:24
+@@ -80,6 +80,10 @@
+ 	Ljc1OTQzNSwiRW5hYmxlZCI6ZmFsc2UsIlNldHRpbmdFbmFibGVkIjp0cnVlLCJTZXR0
+ 	aW5nRXZlckVkaXRlZCI6dHJ1ZX0=
+ 	</data>
++	<key>NSStatusItem Preferred Position BentoBox-0</key>
++	<real>195</real>
++	<key>NSStatusItem Preferred Position WiFi</key>
++	<real>167</real>
+ 	<key>NSStatusItem Visible BentoBox</key>
+ 	<true/>
+ 	<key>NSStatusItem Visible Item-0</key>
+@@ -87,9 +91,9 @@
+ 	<key>NSStatusItem Visible Item-1</key>
+ 	<true/>
+ 	<key>NSStatusItem Visible Item-2</key>
+-	<false/>
++	<true/>
+ 	<key>NSStatusItem Visible Item-3</key>
+-	<false/>
++	<true/>
+ 	<key>NSStatusItem VisibleCC Battery</key>
+ 	<true/>
+ 	<key>NSStatusItem VisibleCC BentoBox-0</key>

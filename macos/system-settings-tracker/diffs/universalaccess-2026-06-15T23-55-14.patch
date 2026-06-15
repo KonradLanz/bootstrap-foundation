@@ -1,0 +1,46 @@
+--- /Users/koni/.local/system-settings-keeper/universalaccess/previous.plist	2026-06-15 23:25:14
++++ /Users/koni/.local/system-settings-keeper/universalaccess/current.plist	2026-06-15 23:55:14
+@@ -2,6 +2,18 @@
+ <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+ <plist version="1.0">
+ <dict>
++	<key>AccessibilityReaderHotkey</key>
++	<dict>
++		<key>AX_READER_HOTKEY_VIEW_IN_READER</key>
++		<dict>
++			<key>charCode</key>
++			<integer>65535</integer>
++			<key>keyCode</key>
++			<integer>53</integer>
++			<key>modifiers</key>
++			<integer>1048576</integer>
++		</dict>
++	</dict>
+ 	<key>FontSizeCategory</key>
+ 	<dict>
+ 		<key>com.apple.Magnifier</key>
+@@ -29,7 +41,7 @@
+ 		<key>com.apple.weather</key>
+ 		<string>UseGlobal</string>
+ 		<key>global</key>
+-		<string>XXL</string>
++		<string>L</string>
+ 		<key>version</key>
+ 		<string>3.0</string>
+ 	</dict>
+@@ -487,7 +499,15 @@
+ 			<integer>1572864</integer>
+ 		</dict>
+ 	</dict>
++	<key>closeViewFarPoint</key>
++	<real>1</real>
+ 	<key>closeViewHotkeysEnabled</key>
++	<false/>
++	<key>closeViewLastZoomDisplayID</key>
++	<integer>0</integer>
++	<key>closeViewNearPoint</key>
++	<real>1</real>
++	<key>closeViewRestoreZoomFactorOnStartup</key>
+ 	<false/>
+ 	<key>closeViewZoomDisplayID</key>
+ 	<integer>0</integer>

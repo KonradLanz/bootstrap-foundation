@@ -1,0 +1,22 @@
+--- /Users/koni/.local/system-settings-keeper/universalaccess/previous.plist	2026-06-15 23:55:14
++++ /Users/koni/.local/system-settings-keeper/universalaccess/current.plist	2026-06-16 00:25:15
+@@ -41,7 +41,7 @@
+ 		<key>com.apple.weather</key>
+ 		<string>UseGlobal</string>
+ 		<key>global</key>
+-		<string>L</string>
++		<string>XL</string>
+ 		<key>version</key>
+ 		<string>3.0</string>
+ 	</dict>
+@@ -573,6 +573,10 @@
+ 	<integer>250</integer>
+ 	<key>stickyKey</key>
+ 	<false/>
++	<key>systemTranscriptionTranscriptionViewBackgroundColor</key>
++	<dict/>
++	<key>systemTranscriptionTranscriptionViewFontColor</key>
++	<dict/>
+ 	<key>useStickyKeysShortcutKeys</key>
+ 	<false/>
+ </dict>

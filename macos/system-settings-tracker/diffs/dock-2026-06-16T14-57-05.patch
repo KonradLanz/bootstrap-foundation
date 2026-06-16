@@ -1,0 +1,49 @@
+--- /Users/koni/.local/system-settings-keeper/dock/previous.plist	2026-06-16 14:27:04
++++ /Users/koni/.local/system-settings-keeper/dock/current.plist	2026-06-16 14:57:05
+@@ -11,7 +11,7 @@
+ 	<key>loc</key>
+ 	<string>de_DE:AT</string>
+ 	<key>mod-count</key>
+-	<integer>415</integer>
++	<integer>419</integer>
+ 	<key>persistent-apps</key>
+ 	<array>
+ 		<dict>
+@@ -1179,7 +1179,7 @@
+ 		</dict>
+ 		<dict>
+ 			<key>GUID</key>
+-			<integer>3703465057</integer>
++			<integer>3703465060</integer>
+ 			<key>tile-data</key>
+ 			<dict>
+ 				<key>book</key>
+@@ -1188,9 +1188,9 @@
+ 				AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFAB
+ 				AAAEAAAAAwMAAAAAACAMAAAAAQEAAEFwcGxpY2F0aW9u
+ 				cw4AAAABAQAAUGVycGxleGl0eS5hcHAAAAgAAAABBgAA
+-				EAAAACQAAAAIAAAABAMAAJXT9QAAAAAACAAAAAQDAADm
+-				PfwAAAAAAAgAAAABBgAATAAAAFwAAAAIAAAAAAQAAEHH
+-				7ktdAAAAGAAAAAECAAACAAAAAAAAAA8AAAAAAAAAAAAA
++				EAAAACQAAAAIAAAABAMAAJXT9QAAAAAACAAAAAQDAAA3
++				Jf0AAAAAAAgAAAABBgAATAAAAFwAAAAIAAAAAAQAAEHH
++				5s49gAAAGAAAAAECAAACAAAAAAAAAA8AAAAAAAAAAAAA
+ 				AAAAAAAIAAAAAQkAAGZpbGU6Ly8vDAAAAAEBAABNYWNp
+ 				bnRvc2ggSEQIAAAABAMAAACA1E5GBwAACAAAAAAEAABB
+ 				x9+ALwAAACQAAAABAQAAOEVFOENCQkEtQzU4Ri00MEZB
+@@ -1217,13 +1217,13 @@
+ 				<key>file-label</key>
+ 				<string>Perplexity</string>
+ 				<key>file-mod-date</key>
+-				<integer>113678763832016</integer>
++				<integer>3863156091</integer>
+ 				<key>file-type</key>
+ 				<integer>1</integer>
+ 				<key>is-beta</key>
+ 				<false/>
+ 				<key>parent-mod-date</key>
+-				<integer>172300772497628</integer>
++				<integer>103027244987605</integer>
+ 			</dict>
+ 			<key>tile-type</key>
+ 			<string>file-tile</string>

@@ -1,0 +1,80 @@
+--- /Users/koni/.local/system-settings-keeper/universalaccess/previous.plist	2026-06-16 12:32:31
++++ /Users/koni/.local/system-settings-keeper/universalaccess/current.plist	2026-06-16 12:43:54
+@@ -49,38 +49,6 @@
+ 	<dict>
+ 		<key>MouseKeys</key>
+ 		<array>
+-			<dict>
+-				<key>Date</key>
+-				<string>2026-02-09 16:16:37</string>
+-				<key>Reason</key>
+-				<string>SessionChangedIsDisabled</string>
+-				<key>State</key>
+-				<false/>
+-			</dict>
+-			<dict>
+-				<key>Date</key>
+-				<string>2026-02-09 16:16:37</string>
+-				<key>Reason</key>
+-				<string>SessionChangedIsDisabled</string>
+-				<key>State</key>
+-				<false/>
+-			</dict>
+-			<dict>
+-				<key>Date</key>
+-				<string>2026-02-09 16:16:37</string>
+-				<key>Reason</key>
+-				<string>SessionChangedIsDisabled</string>
+-				<key>State</key>
+-				<false/>
+-			</dict>
+-			<dict>
+-				<key>Date</key>
+-				<string>2026-03-03 09:36:48</string>
+-				<key>Reason</key>
+-				<string>LoadingPrefsA</string>
+-				<key>State</key>
+-				<false/>
+-			</dict>
+ 			<dict>
+ 				<key>Date</key>
+ 				<string>2026-03-03 09:36:48</string>
+@@ -449,6 +417,38 @@
+ 				<key>State</key>
+ 				<false/>
+ 			</dict>
++			<dict>
++				<key>Date</key>
++				<string>2026-06-16 12:43:44</string>
++				<key>Reason</key>
++				<string>LoadingPrefsA</string>
++				<key>State</key>
++				<false/>
++			</dict>
++			<dict>
++				<key>Date</key>
++				<string>2026-06-16 12:43:48</string>
++				<key>Reason</key>
++				<string>SessionChangedIsDisabled</string>
++				<key>State</key>
++				<false/>
++			</dict>
++			<dict>
++				<key>Date</key>
++				<string>2026-06-16 12:43:48</string>
++				<key>Reason</key>
++				<string>SessionChangedIsDisabled</string>
++				<key>State</key>
++				<false/>
++			</dict>
++			<dict>
++				<key>Date</key>
++				<string>2026-06-16 12:43:48</string>
++				<key>Reason</key>
++				<string>SessionChangedIsDisabled</string>
++				<key>State</key>
++				<false/>
++			</dict>
+ 		</array>
+ 	</dict>
+ 	<key>closeViewCustomHotkeyKey</key>

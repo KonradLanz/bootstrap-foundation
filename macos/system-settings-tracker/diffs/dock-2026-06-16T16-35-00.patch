@@ -1,0 +1,11 @@
+--- /Users/koni/.local/system-settings-keeper/dock/previous.plist	2026-06-16 14:57:05
++++ /Users/koni/.local/system-settings-keeper/dock/current.plist	2026-06-16 16:35:00
+@@ -11,7 +11,7 @@
+ 	<key>loc</key>
+ 	<string>de_DE:AT</string>
+ 	<key>mod-count</key>
+-	<integer>419</integer>
++	<integer>421</integer>
+ 	<key>persistent-apps</key>
+ 	<array>
+ 		<dict>

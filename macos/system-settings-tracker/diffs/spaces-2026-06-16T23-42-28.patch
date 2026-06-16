@@ -1,0 +1,89 @@
+--- /Users/koni/.local/system-settings-keeper/spaces/previous.plist	2026-06-16 20:00:49
++++ /Users/koni/.local/system-settings-keeper/spaces/current.plist	2026-06-16 23:42:28
+@@ -7,7 +7,7 @@
+ 		<key>Management Data</key>
+ 		<dict>
+ 			<key>Age</key>
+-			<real>81351.053017250015</real>
++			<real>5115.6641585416692</real>
+ 			<key>Management Mode</key>
+ 			<integer>1</integer>
+ 			<key>Monitors</key>
+@@ -68,9 +68,9 @@
+ 					<key>Current Space</key>
+ 					<dict>
+ 						<key>ManagedSpaceID</key>
+-						<integer>52</integer>
++						<integer>71</integer>
+ 						<key>id64</key>
+-						<integer>52</integer>
++						<integer>71</integer>
+ 						<key>type</key>
+ 						<integer>0</integer>
+ 						<key>uuid</key>
+@@ -82,9 +82,9 @@
+ 					<array>
+ 						<dict>
+ 							<key>ManagedSpaceID</key>
+-							<integer>52</integer>
++							<integer>71</integer>
+ 							<key>id64</key>
+-							<integer>52</integer>
++							<integer>71</integer>
+ 							<key>type</key>
+ 							<integer>0</integer>
+ 							<key>uuid</key>
+@@ -96,17 +96,17 @@
+ 			<key>Primary</key>
+ 			<dict>
+ 				<key>CreatedCount</key>
+-				<integer>5</integer>
++				<integer>0</integer>
+ 				<key>DeletedCount</key>
+-				<integer>5</integer>
++				<integer>0</integer>
+ 				<key>LifetimeEntryCount</key>
+-				<integer>5</integer>
++				<integer>0</integer>
+ 				<key>LifetimeMax</key>
+-				<real>12314.943085625004</real>
++				<real>0.0</real>
+ 				<key>LifetimeMin</key>
+-				<real>12.431551208333985</real>
++				<real>0.0</real>
+ 				<key>LifetimeSum</key>
+-				<real>13559.398609750006</real>
++				<real>0.0</real>
+ 				<key>PersistedCount</key>
+ 				<integer>0</integer>
+ 			</dict>
+@@ -135,11 +135,10 @@
+ 				<string></string>
+ 				<key>windows</key>
+ 				<array>
++					<integer>909</integer>
+ 					<integer>1902</integer>
+-					<integer>1219</integer>
+ 					<integer>1898</integer>
+-					<integer>1345</integer>
+-					<integer>909</integer>
++					<integer>2156</integer>
+ 					<integer>271</integer>
+ 					<integer>101</integer>
+ 					<integer>34</integer>
+@@ -178,12 +177,12 @@
+ 				<string>4A1AF523-ED8C-4C88-A622-308A96C1CE89</string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>1717</integer>
++					<integer>2374</integer>
+ 					<integer>63</integer>
++					<integer>1717</integer>
+ 					<integer>937</integer>
+ 					<integer>316</integer>
+-					<integer>134</integer>
+-					<integer>1624</integer>
++					<integer>2275</integer>
+ 				</array>
+ 			</dict>
+ 		</array>

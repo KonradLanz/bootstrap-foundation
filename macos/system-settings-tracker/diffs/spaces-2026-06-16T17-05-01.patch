@@ -1,0 +1,61 @@
+--- /Users/koni/.local/system-settings-keeper/spaces/previous.plist	2026-06-16 16:35:00
++++ /Users/koni/.local/system-settings-keeper/spaces/current.plist	2026-06-16 17:05:01
+@@ -7,7 +7,7 @@
+ 		<key>Management Data</key>
+ 		<dict>
+ 			<key>Age</key>
+-			<real>72068.967073250009</real>
++			<real>73355.631313708349</real>
+ 			<key>Management Mode</key>
+ 			<integer>1</integer>
+ 			<key>Monitors</key>
+@@ -135,18 +135,18 @@
+ 				<string></string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>57</integer>
+-					<integer>1255</integer>
++					<integer>1447</integer>
+ 					<integer>1219</integer>
+ 					<integer>1063</integer>
+-					<integer>1062</integer>
++					<integer>1345</integer>
+ 					<integer>909</integer>
++					<integer>1062</integer>
+ 					<integer>101</integer>
+ 					<integer>34</integer>
+ 					<integer>33</integer>
+ 					<integer>32</integer>
+ 					<integer>43</integer>
+-					<integer>19</integer>
++					<integer>1332</integer>
+ 				</array>
+ 			</dict>
+ 			<dict>
+@@ -154,7 +154,6 @@
+ 				<string>E8405298-BFC4-4AA0-B3D8-2677862EB7B0</string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>1255</integer>
+ 					<integer>34</integer>
+ 					<integer>33</integer>
+ 					<integer>32</integer>
+@@ -166,7 +165,6 @@
+ 				<string>80322BAC-FF49-4FFB-BB2E-0F22F26615E4</string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>1255</integer>
+ 					<integer>34</integer>
+ 					<integer>33</integer>
+ 					<integer>32</integer>
+@@ -178,8 +176,9 @@
+ 				<string>4A1AF523-ED8C-4C88-A622-308A96C1CE89</string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>324</integer>
++					<integer>271</integer>
+ 					<integer>937</integer>
++					<integer>324</integer>
+ 					<integer>316</integer>
+ 					<integer>63</integer>
+ 					<integer>134</integer>

@@ -1,0 +1,38 @@
+--- /Users/koni/.local/system-settings-keeper/spaces/previous.plist	2026-06-17 00:42:29
++++ /Users/koni/.local/system-settings-keeper/spaces/current.plist	2026-06-17 01:42:30
+@@ -7,7 +7,7 @@
+ 		<key>Management Data</key>
+ 		<dict>
+ 			<key>Age</key>
+-			<real>9637.3667037083396</real>
++			<real>12063.776480416669</real>
+ 			<key>Management Mode</key>
+ 			<integer>1</integer>
+ 			<key>Monitors</key>
+@@ -135,13 +135,14 @@
+ 				<string></string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>2787</integer>
+-					<integer>2600</integer>
+-					<integer>2592</integer>
++					<integer>3119</integer>
++					<integer>2594</integer>
++					<integer>1902</integer>
+ 					<integer>1898</integer>
++					<integer>2592</integer>
+ 					<integer>909</integer>
+-					<integer>2594</integer>
+ 					<integer>271</integer>
++					<integer>2600</integer>
+ 					<integer>101</integer>
+ 					<integer>34</integer>
+ 					<integer>33</integer>
+@@ -179,6 +180,7 @@
+ 				<string>4A1AF523-ED8C-4C88-A622-308A96C1CE89</string>
+ 				<key>windows</key>
+ 				<array>
++					<integer>2972</integer>
+ 					<integer>2785</integer>
+ 					<integer>2736</integer>
+ 					<integer>63</integer>

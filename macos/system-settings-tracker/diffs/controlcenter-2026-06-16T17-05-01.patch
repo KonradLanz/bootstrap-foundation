@@ -1,0 +1,11 @@
+--- /Users/koni/.local/system-settings-keeper/controlcenter/previous.plist	2026-06-16 16:35:00
++++ /Users/koni/.local/system-settings-keeper/controlcenter/current.plist	2026-06-16 17:05:01
+@@ -157,8 +157,6 @@
+ 	<true/>
+ 	<key>NSStatusItem Visible Sound</key>
+ 	<true/>
+-	<key>NSStatusItem VisibleCC AudioVideoModule</key>
+-	<true/>
+ 	<key>NSStatusItem VisibleCC Battery</key>
+ 	<true/>
+ 	<key>NSStatusItem VisibleCC BentoBox-0</key>

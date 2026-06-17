@@ -1,0 +1,20 @@
+--- /Users/koni/.local/system-settings-keeper/finder/previous.plist	2026-06-17 01:12:29
++++ /Users/koni/.local/system-settings-keeper/finder/current.plist	2026-06-17 11:07:27
+@@ -2927,7 +2927,7 @@
+ 					<key>visible</key>
+ 					<true/>
+ 					<key>width</key>
+-					<integer>300</integer>
++					<integer>795</integer>
+ 				</dict>
+ 				<dict>
+ 					<key>ascending</key>
+@@ -3156,7 +3156,7 @@
+ 					<key>visible</key>
+ 					<true/>
+ 					<key>width</key>
+-					<integer>300</integer>
++					<integer>795</integer>
+ 				</dict>
+ 				<key>size</key>
+ 				<dict>

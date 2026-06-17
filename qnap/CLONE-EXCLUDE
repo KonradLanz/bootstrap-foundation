@@ -1,0 +1,9 @@
+# CLONE-EXCLUDE — repos to skip during clone-all.sh
+# One repo name per line (without owner prefix)
+# Lines starting with # are comments
+
+# Large upstream source repos — not needed locally on NAS
+entware-packages
+
+# Add further large or irrelevant repos below:
+# some-large-dataset-repo

@@ -39,6 +39,7 @@ Ubuntu/Debian-System auf und installieren Self-Hosted-Dienste idempotent.
 |---------|-------------|-----------|
 | **[Forgejo](services/forgejo/)** | Git Forge (Free Software, Gitea-Fork) | `curl -fsSL https://raw.githubusercontent.com/KonradLanz/bootstrap-foundation/main/services/forgejo/bootstrap.sh \| sh` |
 | **[Gitea](services/gitea/)** | Git Forge (Original, Open Core) | `curl -fsSL https://raw.githubusercontent.com/KonradLanz/bootstrap-foundation/main/services/gitea/bootstrap.sh \| sh` |
+| **[Vaultwarden](qnap/vaultwarden/)** | Self-hosted Bitwarden (Rust) | `sh qnap/vaultwarden/bootstrap-vaultwarden.sh --haproxy vault.own.dedyn.io` |
 
 Beide unterstuetzen optionale Umgebungsvariablen (`FORGEJO_DOMAIN`, `FORGEJO_VERSION`, etc.) und
 konfigurieren automatisch Caddy als Reverse Proxy wenn eine Domain gesetzt ist.

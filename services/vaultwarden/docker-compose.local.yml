@@ -1,0 +1,20 @@
+# docker-compose.local.yml
+# Lokaler Entwicklungs- / Fallback-Container.
+# Kein HTTPS, nur localhost.
+
+version: '3.8'
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - ${HOME}/.local/share/vaultwarden:/data
+    environment:
+      SIGNUPS_ALLOWED: "false"
+      INVITATIONS_ALLOWED: "true"
+      LOG_LEVEL: "warn"
+      PUSH_ENABLED: "false"

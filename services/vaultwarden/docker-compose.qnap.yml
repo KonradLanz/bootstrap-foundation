@@ -1,0 +1,23 @@
+# docker-compose.qnap.yml
+# Für QNAP Container Station.
+# Volume-Pfad an deine QNAP-Freigabe anpassen.
+
+version: '3.8'
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:80"   # nur lokal / via WireGuard erreichbar
+    volumes:
+      - /share/homes/DOMAIN=AD/koni/vaultwarden-data:/data
+    environment:
+      SIGNUPS_ALLOWED: "false"
+      INVITATIONS_ALLOWED: "true"
+      # ADMIN_TOKEN: aus KeePassXC oder Umgebungsvariable setzen
+      # WireGuard-Zugriff: kein HTTPS nötig wenn Reverse-Proxy (nginx/Caddy) vorgelagert
+      DOMAIN: "https://vault.own.dedyn.io"
+      LOG_LEVEL: "warn"
+      PUSH_ENABLED: "false"   # kein Bitwarden-Cloud-Push

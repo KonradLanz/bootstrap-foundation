@@ -1,0 +1,15 @@
+--- /Users/koni/.local/system-settings-keeper/HIToolbox/previous.plist	2026-06-18 09:18:48
++++ /Users/koni/.local/system-settings-keeper/HIToolbox/current.plist	2026-06-18 23:48:52
+@@ -51,6 +51,12 @@
+ 			<key>KeyboardLayout Name</key>
+ 			<string>Austrian</string>
+ 		</dict>
++		<dict>
++			<key>Bundle ID</key>
++			<string>com.apple.CharacterPaletteIM</string>
++			<key>InputSourceKind</key>
++			<string>Non Keyboard Input Method</string>
++		</dict>
+ 	</array>
+ </dict>
+ </plist>

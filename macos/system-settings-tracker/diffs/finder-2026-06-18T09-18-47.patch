@@ -1,0 +1,34 @@
+--- /Users/koni/.local/system-settings-keeper/finder/previous.plist	2026-06-18 05:40:01
++++ /Users/koni/.local/system-settings-keeper/finder/current.plist	2026-06-18 09:18:47
+@@ -2949,7 +2949,7 @@
+ 					<key>visible</key>
+ 					<true/>
+ 					<key>width</key>
+-					<integer>795</integer>
++					<integer>167</integer>
+ 				</dict>
+ 				<dict>
+ 					<key>ascending</key>
+@@ -3178,7 +3178,7 @@
+ 					<key>visible</key>
+ 					<true/>
+ 					<key>width</key>
+-					<integer>795</integer>
++					<integer>167</integer>
+ 				</dict>
+ 				<key>size</key>
+ 				<dict>
+@@ -3225,11 +3225,11 @@
+ 			<key>ShowStatusBar</key>
+ 			<true/>
+ 			<key>ShowTabView</key>
+-			<false/>
++			<true/>
+ 			<key>ShowToolbar</key>
+ 			<true/>
+ 			<key>WindowBounds</key>
+-			<string>{{3163, 1385}, {1471, 839}}</string>
++			<string>{{599, 399}, {1696, 1128}}</string>
+ 		</dict>
+ 	</dict>
+ 	<key>ShowExternalHardDrivesOnDesktop</key>

@@ -1,0 +1,62 @@
+--- /Users/koni/.local/system-settings-keeper/finder/previous.plist	2026-06-19 00:18:53
++++ /Users/koni/.local/system-settings-keeper/finder/current.plist	2026-06-19 01:04:36
+@@ -343,11 +343,11 @@
+ 			<key>ShowStatusBar</key>
+ 			<true/>
+ 			<key>ShowTabView</key>
+-			<true/>
++			<false/>
+ 			<key>ShowToolbar</key>
+ 			<true/>
+ 			<key>WindowBounds</key>
+-			<string>{{599, 399}, {1696, 1128}}</string>
++			<string>{{197, 348}, {920, 492}}</string>
+ 		</dict>
+ 	</dict>
+ 	<key>CopyProgressWindowLocation</key>
+@@ -1635,6 +1635,36 @@
+ 	<integer>3</integer>
+ 	<key>FXRecentFolders</key>
+ 	<array>
++		<dict>
++			<key>file-bookmark</key>
++			<data>
++			Ym9va2wDAAAAAAUQQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
++			AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHACAAAEAAAAAwMAAAAC
++			ACAHAAAAAQEAAFZvbHVtZXMABAAAAAEBAABob21lCAAAAAEGAAAQ
++			AAAAIAAAAAgAAAAEAwAAqDgAAAAAAAAAAAAAAQoAAAgAAAABBgAA
++			PAAAAEwAAAAIAAAAAAQAAEHH8k6Ol7WAGAAAAAECAAAKAAAAAAAA
++			AA8AAAAAAAAAAAAAAAAAAAAAAAAAAQUAABUAAAABCQAAZmlsZTov
++			Ly9Wb2x1bWVzL2hvbWUvAAAACAAAAAQDAAAAAKTtdAAAABgAAAAB
++			AgAAAAAAAAAAAADvEwAAAQAAAAAAAAAAAAAADQAAAAEBAAAvVm9s
++			dW1lcy9ob21lAAAAJgAAAAEJAABzbWI6Ly9BRDtrb25pQG5hcy5h
++			ZC5vd24uZGVkeW4uaW8vaG9tZQAACAAAAAEJAABmaWxlOi8vLwwA
++			AAABAQAATWFjaW50b3NoIEhECAAAAAQDAAAAgNRORgcAAAgAAAAA
++			BAAAQcffgC8AAAAkAAAAAQEAADhFRThDQkJBLUM1OEYtNDBGQS05
++			ODQxLTNCRDk1MzMxMjE5OBgAAAABAgAAgQAAAAEAAADvEwAAAQAA
++			AAAAAAAAAAAAAQAAAAEBAAAvAAAAYAAAAP7///8A8AAAAAAAAAcA
++			AAACIAAAxAEAAAAAAAAFIAAANAEAAAAAAAAQIAAARAEAAAAAAAAR
++			IAAAeAEAAAAAAAASIAAAWAEAAAAAAAATIAAAaAEAAAAAAAAgIAAA
++			pAEAAAAAAAAEAAAAAwMAAADwAAAEAAAAAwMAAAAAAAAEAAAAAwMA
++			AAEAAAAMAAAAAQYAADgCAABEAgAAUAIAALQAAAD+////AQAAANAB
++			AAAOAAAABBAAACwAAAAAAAAABRAAAFQAAAAAAAAAEBAAAHQAAAAA
++			AAAAQBAAAGQAAAAAAAAAACAAAFwCAAAAAAAAAiAAAOwAAAAAAAAA
++			BSAAAJwAAAAAAAAAECAAACAAAAAAAAAAEiAAALwAAAAAAAAAEyAA
++			AGQAAAAAAAAAICAAAMwAAAAAAAAAUCAAAAQBAAAAAAAAAdAAAJQA
++			AAAAAAAAENAAAAQAAAAAAAAA
++			</data>
++			<key>name</key>
++			<string>home</string>
++		</dict>
+ 		<dict>
+ 			<key>file-bookmark</key>
+ 			<data>
+@@ -3050,7 +3080,7 @@
+ 			<key>ShowToolbar</key>
+ 			<true/>
+ 			<key>WindowBounds</key>
+-			<string>{{3163, 1385}, {1471, 839}}</string>
++			<string>{{139, 59}, {1471, 839}}</string>
+ 		</dict>
+ 	</dict>
+ 	<key>ShowExternalHardDrivesOnDesktop</key>

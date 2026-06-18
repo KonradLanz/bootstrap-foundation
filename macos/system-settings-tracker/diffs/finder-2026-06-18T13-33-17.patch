@@ -1,0 +1,11 @@
+--- /Users/koni/.local/system-settings-keeper/finder/previous.plist	2026-06-18 09:18:47
++++ /Users/koni/.local/system-settings-keeper/finder/current.plist	2026-06-18 13:33:17
+@@ -347,7 +347,7 @@
+ 			<key>ShowToolbar</key>
+ 			<true/>
+ 			<key>WindowBounds</key>
+-			<string>{{436, 269}, {1189, 464}}</string>
++			<string>{{3221, 1674}, {920, 492}}</string>
+ 		</dict>
+ 	</dict>
+ 	<key>CopyProgressWindowLocation</key>

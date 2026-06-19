@@ -1,0 +1,84 @@
+--- /Users/koni/.local/system-settings-keeper/finder/previous.plist	2026-06-19 10:19:05
++++ /Users/koni/.local/system-settings-keeper/finder/current.plist	2026-06-19 21:30:28
+@@ -22,7 +22,7 @@
+ 					<key>visible</key>
+ 					<true/>
+ 					<key>width</key>
+-					<integer>263</integer>
++					<integer>346</integer>
+ 				</dict>
+ 				<dict>
+ 					<key>ascending</key>
+@@ -158,7 +158,7 @@
+ 			<key>iconSize</key>
+ 			<real>16</real>
+ 			<key>scrollPositionX</key>
+-			<real>-234</real>
++			<real>-232</real>
+ 			<key>scrollPositionY</key>
+ 			<real>0.0</real>
+ 			<key>showIconPreview</key>
+@@ -292,7 +292,7 @@
+ 					<key>visible</key>
+ 					<true/>
+ 					<key>width</key>
+-					<integer>263</integer>
++					<integer>346</integer>
+ 				</dict>
+ 				<key>size</key>
+ 				<dict>
+@@ -320,7 +320,7 @@
+ 			<key>iconSize</key>
+ 			<real>16</real>
+ 			<key>scrollPositionX</key>
+-			<real>-234</real>
++			<real>-232</real>
+ 			<key>scrollPositionY</key>
+ 			<real>0.0</real>
+ 			<key>showIconPreview</key>
+@@ -1443,7 +1443,7 @@
+ 	<key>FXArrangeGroupViewBy</key>
+ 	<string>Name</string>
+ 	<key>FXConnectToBounds</key>
+-	<string>{{657, 659}, {486, 234}}</string>
++	<string>{{3024, 1326}, {486, 234}}</string>
+ 	<key>FXConnectToLastURL</key>
+ 	<string>smb://nas.ad.own.dedyn.io/home</string>
+ 	<key>FXDesktopTouchBarUpgradedToTenTwelveOne</key>
+@@ -1638,6 +1638,27 @@
+ 		<dict>
+ 			<key>file-bookmark</key>
+ 			<data>
++			Ym9vawwCAAAAAAUQQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
++			AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABABAAAEAAAAAwMAAAAC
++			ACAMAAAAAQEAAEFwcGxpY2F0aW9ucwQAAAABBgAAEAAAAAgAAAAE
++			AwAAldP1AAAAAAAEAAAAAQYAADAAAAAIAAAAAAQAAEHH34AvAAAA
++			GAAAAAECAAACAAAAAAAAAA8AAAAAAAAAAAAAAAAAAAAAAAAAAQUA
++			AAgAAAABCQAAZmlsZTovLy8MAAAAAQEAAE1hY2ludG9zaCBIRAgA
++			AAAEAwAAAIDUTkYHAAAkAAAAAQEAADhFRThDQkJBLUM1OEYtNDBG
++			QS05ODQxLTNCRDk1MzMxMjE5OBgAAAABAgAAgQAAAAEAAADvEwAA
++			AQAAAAAAAAAAAAAAAQAAAAEBAAAvAAAAtAAAAP7///8BAAAAAAAA
++			AA4AAAAEEAAAJAAAAAAAAAAFEAAAQAAAAAAAAAAQEAAAXAAAAAAA
++			AABAEAAATAAAAAAAAAACIAAABAEAAAAAAAAFIAAAhAAAAAAAAAAQ
++			IAAAlAAAAAAAAAARIAAAuAAAAAAAAAASIAAAqAAAAAAAAAATIAAA
++			TAAAAAAAAAAgIAAA5AAAAAAAAAAwIAAAfAAAAAAAAAAB0AAAfAAA
++			AAAAAAAQ0AAABAAAAAAAAAA=
++			</data>
++			<key>name</key>
++			<string>Programme</string>
++		</dict>
++		<dict>
++			<key>file-bookmark</key>
++			<data>
+ 			Ym9va2wDAAAAAAUQQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+ 			AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHACAAAEAAAAAwMAAAAC
+ 			ACAHAAAAAQEAAFZvbHVtZXMABAAAAAEBAABob21lCAAAAAEGAAAQ
+@@ -3080,7 +3101,7 @@
+ 			<key>ShowToolbar</key>
+ 			<true/>
+ 			<key>WindowBounds</key>
+-			<string>{{139, 59}, {1471, 839}}</string>
++			<string>{{3163, 1385}, {1471, 839}}</string>
+ 		</dict>
+ 	</dict>
+ 	<key>ShowExternalHardDrivesOnDesktop</key>

@@ -1,0 +1,91 @@
+--- /Users/koni/.local/system-settings-keeper/spaces/previous.plist	2026-06-18 23:48:52
++++ /Users/koni/.local/system-settings-keeper/spaces/current.plist	2026-06-19 21:30:28
+@@ -7,7 +7,7 @@
+ 		<key>Management Data</key>
+ 		<dict>
+ 			<key>Age</key>
+-			<real>76634.11207883335</real>
++			<real>84686.112578291693</real>
+ 			<key>Management Mode</key>
+ 			<integer>1</integer>
+ 			<key>Monitors</key>
+@@ -68,9 +68,9 @@
+ 					<key>Current Space</key>
+ 					<dict>
+ 						<key>ManagedSpaceID</key>
+-						<integer>167</integer>
++						<integer>182</integer>
+ 						<key>id64</key>
+-						<integer>167</integer>
++						<integer>182</integer>
+ 						<key>type</key>
+ 						<integer>0</integer>
+ 						<key>uuid</key>
+@@ -82,9 +82,9 @@
+ 					<array>
+ 						<dict>
+ 							<key>ManagedSpaceID</key>
+-							<integer>167</integer>
++							<integer>182</integer>
+ 							<key>id64</key>
+-							<integer>167</integer>
++							<integer>182</integer>
+ 							<key>type</key>
+ 							<integer>0</integer>
+ 							<key>uuid</key>
+@@ -135,17 +135,15 @@
+ 				<string></string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>6503</integer>
+-					<integer>6628</integer>
+-					<integer>3938</integer>
+-					<integer>2594</integer>
+-					<integer>6496</integer>
++					<integer>4074</integer>
+ 					<integer>3935</integer>
++					<integer>6496</integer>
++					<integer>6628</integer>
+ 					<integer>34</integer>
+ 					<integer>33</integer>
+ 					<integer>32</integer>
+ 					<integer>43</integer>
+-					<integer>1497</integer>
++					<integer>7297</integer>
+ 				</array>
+ 			</dict>
+ 			<dict>
+@@ -153,7 +151,6 @@
+ 				<string>E8405298-BFC4-4AA0-B3D8-2677862EB7B0</string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>6503</integer>
+ 					<integer>34</integer>
+ 					<integer>33</integer>
+ 					<integer>32</integer>
+@@ -165,7 +162,6 @@
+ 				<string>80322BAC-FF49-4FFB-BB2E-0F22F26615E4</string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>6503</integer>
+ 					<integer>34</integer>
+ 					<integer>33</integer>
+ 					<integer>32</integer>
+@@ -177,14 +173,14 @@
+ 				<string>4A1AF523-ED8C-4C88-A622-308A96C1CE89</string>
+ 				<key>windows</key>
+ 				<array>
+-					<integer>1717</integer>
++					<integer>7425</integer>
+ 					<integer>5533</integer>
+ 					<integer>2785</integer>
+ 					<integer>2736</integer>
+ 					<integer>63</integer>
++					<integer>1717</integer>
+ 					<integer>2972</integer>
+-					<integer>316</integer>
+-					<integer>6592</integer>
++					<integer>7399</integer>
+ 				</array>
+ 			</dict>
+ 		</array>

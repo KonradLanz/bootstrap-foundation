@@ -1,0 +1,32 @@
+--- /Users/koni/.local/system-settings-keeper/universalaccess/previous.plist	2026-06-18 23:48:52
++++ /Users/koni/.local/system-settings-keeper/universalaccess/current.plist	2026-06-19 21:30:28
+@@ -49,14 +49,6 @@
+ 	<dict>
+ 		<key>MouseKeys</key>
+ 		<array>
+-			<dict>
+-				<key>Date</key>
+-				<string>2026-03-03 09:36:55</string>
+-				<key>Reason</key>
+-				<string>LoadingPrefsA</string>
+-				<key>State</key>
+-				<false/>
+-			</dict>
+ 			<dict>
+ 				<key>Date</key>
+ 				<string>2026-03-03 09:36:55</string>
+@@ -449,6 +441,14 @@
+ 				<key>State</key>
+ 				<false/>
+ 			</dict>
++			<dict>
++				<key>Date</key>
++				<string>2026-06-19 21:26:54</string>
++				<key>Reason</key>
++				<string>LoadingPrefsA</string>
++				<key>State</key>
++				<false/>
++			</dict>
+ 		</array>
+ 	</dict>
+ 	<key>closeViewCustomHotkeyKey</key>

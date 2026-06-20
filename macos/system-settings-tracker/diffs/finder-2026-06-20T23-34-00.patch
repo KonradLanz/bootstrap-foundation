@@ -1,0 +1,11 @@
+--- /Users/koni/.local/system-settings-keeper/finder/previous.plist	2026-06-20 23:04:00
++++ /Users/koni/.local/system-settings-keeper/finder/current.plist	2026-06-20 23:34:01
+@@ -1443,7 +1443,7 @@
+ 	<key>FXArrangeGroupViewBy</key>
+ 	<string>Name</string>
+ 	<key>FXConnectToBounds</key>
+-	<string>{{3024, 1326}, {486, 234}}</string>
++	<string>{{2538, 1326}, {486, 234}}</string>
+ 	<key>FXConnectToLastURL</key>
+ 	<string>smb://nas.ad.own.dedyn.io/home</string>
+ 	<key>FXDesktopTouchBarUpgradedToTenTwelveOne</key>

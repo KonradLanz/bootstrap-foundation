@@ -1,0 +1,74 @@
+--- /Users/koni/.local/system-settings-keeper/spaces/previous.plist	2026-06-20 17:47:54
++++ /Users/koni/.local/system-settings-keeper/spaces/current.plist	2026-06-20 21:57:21
+@@ -7,7 +7,7 @@
+ 		<key>Management Data</key>
+ 		<dict>
+ 			<key>Age</key>
+-			<real>25107.237374083343</real>
++			<real>28114.277639541688</real>
+ 			<key>Management Mode</key>
+ 			<integer>1</integer>
+ 			<key>Monitors</key>
+@@ -68,9 +68,9 @@
+ 					<key>Current Space</key>
+ 					<dict>
+ 						<key>ManagedSpaceID</key>
+-						<integer>216</integer>
++						<integer>235</integer>
+ 						<key>id64</key>
+-						<integer>216</integer>
++						<integer>235</integer>
+ 						<key>type</key>
+ 						<integer>0</integer>
+ 						<key>uuid</key>
+@@ -82,9 +82,9 @@
+ 					<array>
+ 						<dict>
+ 							<key>ManagedSpaceID</key>
+-							<integer>216</integer>
++							<integer>235</integer>
+ 							<key>id64</key>
+-							<integer>216</integer>
++							<integer>235</integer>
+ 							<key>type</key>
+ 							<integer>0</integer>
+ 							<key>uuid</key>
+@@ -135,9 +135,10 @@
+ 				<string></string>
+ 				<key>windows</key>
+ 				<array>
++					<integer>9799</integer>
++					<integer>9260</integer>
+ 					<integer>9755</integer>
+ 					<integer>9570</integer>
+-					<integer>9260</integer>
+ 					<integer>8769</integer>
+ 					<integer>9588</integer>
+ 					<integer>8809</integer>
+@@ -162,6 +163,7 @@
+ 				<string>E8405298-BFC4-4AA0-B3D8-2677862EB7B0</string>
+ 				<key>windows</key>
+ 				<array>
++					<integer>9799</integer>
+ 					<integer>34</integer>
+ 					<integer>33</integer>
+ 					<integer>32</integer>
+@@ -173,6 +175,7 @@
+ 				<string>80322BAC-FF49-4FFB-BB2E-0F22F26615E4</string>
+ 				<key>windows</key>
+ 				<array>
++					<integer>9799</integer>
+ 					<integer>34</integer>
+ 					<integer>33</integer>
+ 					<integer>32</integer>
+@@ -185,9 +188,8 @@
+ 				<key>windows</key>
+ 				<array>
+ 					<integer>1717</integer>
+-					<integer>9502</integer>
+ 					<integer>8245</integer>
+-					<integer>8584</integer>
++					<integer>9832</integer>
+ 				</array>
+ 			</dict>
+ 		</array>

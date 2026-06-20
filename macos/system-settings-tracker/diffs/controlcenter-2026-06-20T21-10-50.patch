@@ -1,0 +1,11 @@
+--- /Users/koni/.local/system-settings-keeper/controlcenter/previous.plist	2026-06-20 15:17:53
++++ /Users/koni/.local/system-settings-keeper/controlcenter/current.plist	2026-06-20 21:10:50
+@@ -134,7 +134,7 @@
+ 	<key>HasAttemptedMenuBarWorkflowMigration</key>
+ 	<true/>
+ 	<key>LastHeartbeatDateString.daily</key>
+-	<string>2026-06-19T19:16:26Z</string>
++	<string>2026-06-20T18:04:26Z</string>
+ 	<key>LastPeriodicAnalyticsPostDate</key>
+ 	<date>2026-06-20T12:46:25Z</date>
+ 	<key>LiveActivityState</key>

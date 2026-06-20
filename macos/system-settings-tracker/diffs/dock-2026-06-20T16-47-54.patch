@@ -1,0 +1,20 @@
+--- /Users/koni/.local/system-settings-keeper/dock/previous.plist	2026-06-20 16:17:53
++++ /Users/koni/.local/system-settings-keeper/dock/current.plist	2026-06-20 16:47:54
+@@ -11,7 +11,7 @@
+ 	<key>loc</key>
+ 	<string>de_DE:AT</string>
+ 	<key>mod-count</key>
+-	<integer>448</integer>
++	<integer>450</integer>
+ 	<key>persistent-apps</key>
+ 	<array>
+ 		<dict>
+@@ -1179,7 +1179,7 @@
+ 		</dict>
+ 		<dict>
+ 			<key>GUID</key>
+-			<integer>3080485123</integer>
++			<integer>3080485124</integer>
+ 			<key>tile-data</key>
+ 			<dict>
+ 				<key>book</key>

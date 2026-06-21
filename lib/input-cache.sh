@@ -36,24 +36,21 @@ _kl_read_input() {
     _kl_prompt="$3"
     _kl_input=""
 
+    # printf '%b' interpretiert \n, \t etc. -- noetig da Prompt-Strings \n enthalten
     if [ "$_kl_sens" = "plain" ]; then
         # Visible input -- safe for non-sensitive data
-        printf '%s' "$_kl_prompt" >&2
+        printf '%b' "$_kl_prompt" >&2
         read -r _kl_input || _kl_input=""
     else
         # Silent input -- passwords, tokens, API keys
-        # Use read -s if available (bash/zsh), fallback to stty -echo for POSIX sh
-        printf '%s' "$_kl_prompt" >&2
-        if ( read -rs _kl_test_silent 2>/dev/null </dev/null ); then
-            read -rs _kl_input 2>/dev/null || _kl_input=""
-        else
-            # POSIX sh fallback: stty -echo
-            _kl_old_stty="$(stty -g 2>/dev/null || true)"
-            stty -echo 2>/dev/null || true
-            read -r _kl_input || _kl_input=""
-            stty "$_kl_old_stty" 2>/dev/null || true
-        fi
-        printf '\n' >&2  # Newline after silent input
+        # stty -echo ist der zuverlaessigste POSIX-Weg (funktioniert in bash+zsh+sh)
+        # read -s funktioniert nur in bash/zsh, nicht in /bin/sh
+        printf '%b' "$_kl_prompt" >&2
+        _kl_old_stty="$(stty -g 2>/dev/null || true)"
+        stty -echo 2>/dev/null || true
+        read -r _kl_input || _kl_input=""
+        stty "${_kl_old_stty:-echo}" 2>/dev/null || true
+        printf '\n' >&2  # Newline nach silent input (Enter wird nicht gezeigt)
     fi
 
     eval "$_kl_var=\"$_kl_input\""

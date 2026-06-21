@@ -43,7 +43,7 @@ FORGEJO_DOMAIN=""
 HTTP_PORT=3000
 SSH_PORT=2222
 IMAGE_TAG="10"
-USE_POSTGRES=0
+USE_POSTGRES=-1   # -1 = auto-detect
 USE_TLS=0
 USE_HAPROXY=0
 HAPROXY_IP="192.168.1.2"
@@ -60,6 +60,7 @@ while [ $# -gt 0 ]; do
         --dry-run)         DRY_RUN=1;  shift ;;
         --verbose|-v)      VERBOSE=1;  shift ;;
         --postgres)        USE_POSTGRES=1; shift ;;
+        --sqlite)          USE_POSTGRES=0; shift ;;  # explizit SQLite erzwingen
         --tls)             USE_TLS=1;  shift ;;
         --haproxy)
             USE_HAPROXY=1
@@ -160,6 +161,27 @@ else
     log_error "Neither 'docker compose' nor 'docker-compose' found."
 fi
 log_success "Compose: $COMPOSE_CMD"
+
+# ── DB auto-detect ───────────────────────────────────────────────────────────
+# -1 = not set via flag → auto-detect or prompt
+if [ "$USE_POSTGRES" -eq -1 ]; then
+    if docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^nas-postgres$"; then
+        log_info "nas-postgres bereits aktiv → nutze PostgreSQL (override: --sqlite)"
+        USE_POSTGRES=1
+    elif [ -t 0 ] && [ -t 1 ]; then
+        # interaktiv: Rückfrage mit Default=Y (PostgreSQL empfohlen)
+        printf "  Install PostgreSQL backend? (recommended) [Y/n]: "
+        read -r _db_choice < /dev/tty
+        case "${_db_choice:-Y}" in
+            [Yy]*|'') USE_POSTGRES=1 ;;
+            *)         USE_POSTGRES=0 ;;
+        esac
+    else
+        # headless ohne Flag → SQLite als sicherer Fallback, Warnung
+        log_warn "Kein nas-postgres gefunden und kein TTY → SQLite (headless default). Nutze --postgres für PostgreSQL."
+        USE_POSTGRES=0
+    fi
+fi
 
 if [ "$USE_POSTGRES" -eq 1 ]; then
     docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^nas-postgres$" || \

@@ -100,8 +100,9 @@ fi
 # KL_RUN_MODE=interactive explizit setzen -- nach SSH-Pipe ist -t 0 false
 # und kl_read_cached wuerde sonst in unassisted/kl_unassisted_wait haengen
 export KL_RUN_MODE=interactive
-kl_read_cached PRIMARY_USER  'forgejo/primary_user'  'Forgejo Primary Username'
-kl_read_cached PRIMARY_EMAIL 'forgejo/primary_email' 'Forgejo Primary Email'
+# plain: Username + Email sind keine Secrets -- kein GPG/Vaultwarden noetig
+kl_read_cached PRIMARY_USER  'forgejo/primary_user'  'Forgejo Primary Username'  '' plain
+kl_read_cached PRIMARY_EMAIL 'forgejo/primary_email' 'Forgejo Primary Email'     '' plain
 export KL_RUN_MODE=auto
 PRIMARY_USER="${PRIMARY_USER:-$(whoami)}"
 PRIMARY_EMAIL="${PRIMARY_EMAIL:-${PRIMARY_USER}@${FORGEJO_DOMAIN}}"

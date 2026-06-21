@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+# qnap/forgejo/run-bootstrap.sh
+# ---------------------------------------------------------------------------
+# Wrapper: holt Forgejo-Admin-Passwort aus dem Credential-Backend (Mac)
+# und ruft bootstrap-forgejo.sh headless per SSH auf dem QNAP auf.
+#
+# Aufruf (vom Mac, im Repo-Root):
+#   bash qnap/forgejo/run-bootstrap.sh [--dry-run] [--rewrite-compose]
+#
+# Voraussetzungen:
+#   - SSH-Zugang zum QNAP via 'nas' (ssh-alias)
+#   - Repo auf dem QNAP unter REMOTE_REPO_PATH
+#   - Credential-Backend (vaultwarden/keepassxc/plain) konfiguriert
+# ---------------------------------------------------------------------------
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+. "${REPO_ROOT}/lib/secret-backends.sh"
+
+GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[1;36m'; RED='\033[0;31m'; NC='\033[0m'
+info() { printf "${BLUE}[INFO]${NC}  %s\n" "$*"; }
+ok()   { printf "${GREEN}[OK]${NC}    %s\n" "$*"; }
+warn() { printf "${YELLOW}[WARN]${NC}  %s\n" "$*"; }
+die()  { printf "${RED}[ERROR]${NC} %s\n" "$*" >&2; exit 1; }
+
+# ---------------------------------------------------------------------------
+# Konfiguration
+# ---------------------------------------------------------------------------
+NAS_HOST="nas"
+REMOTE_REPO_PATH="/share/homes/koni/bootstrap-foundation"
+FORGEJO_DOMAIN="forgejo.own.dedyn.io"
+HAPROXY_IP="192.168.111.40"
+ADMIN_USER="forgejo-admin"
+ADMIN_EMAIL="admin@${FORGEJO_DOMAIN}"
+DRY_RUN_FLAG=""
+REWRITE_FLAG=""
+
+# ---------------------------------------------------------------------------
+# Args
+# ---------------------------------------------------------------------------
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --dry-run)        DRY_RUN_FLAG="--dry-run";       shift ;;
+        --rewrite-compose) REWRITE_FLAG="--rewrite-compose"; shift ;;
+        --domain)         FORGEJO_DOMAIN="$2";            shift 2 ;;
+        --admin-user)     ADMIN_USER="$2";                shift 2 ;;
+        --admin-email)    ADMIN_EMAIL="$2";               shift 2 ;;
+        --haproxy-ip)     HAPROXY_IP="$2";               shift 2 ;;
+        --remote-path)    REMOTE_REPO_PATH="$2";          shift 2 ;;
+        --help|-h)
+            grep '^#' "$0" | sed 's/^# \?//'; exit 0 ;;
+        *) die "Unbekannte Option: $1" ;;
+    esac
+done
+
+# ---------------------------------------------------------------------------
+# Passwort aus Backend holen
+# ---------------------------------------------------------------------------
+BACKEND=$(sb_detect_backend)
+info "Credential-Backend: ${BACKEND}"
+
+PASS_KEY="forgejo/${ADMIN_USER}_pass"
+ADMIN_PASS=$(sb_read "$BACKEND" "$PASS_KEY" 2>/dev/null || true)
+
+if [ -z "$ADMIN_PASS" ]; then
+    warn "Kein Passwort im Backend unter '${PASS_KEY}'"
+    printf "Neues Passwort fuer '%s': " "$ADMIN_USER" >&2
+    read -rs ADMIN_PASS; printf '\n' >&2
+    [ -z "$ADMIN_PASS" ] && die "Passwort darf nicht leer sein."
+
+    printf "Passwort in Backend speichern? [y/N] " >&2
+    read -r SAVE_PASS
+    if [ "${SAVE_PASS:-n}" = "y" ] || [ "${SAVE_PASS:-n}" = "Y" ]; then
+        sb_write "$BACKEND" "$PASS_KEY" "$ADMIN_PASS" "$ADMIN_USER"
+        ok "Passwort gespeichert: ${PASS_KEY}"
+    fi
+else
+    ok "Passwort aus Backend geladen: ${PASS_KEY}"
+fi
+
+# ---------------------------------------------------------------------------
+# Repo auf NAS aktuell halten (git pull)
+# ---------------------------------------------------------------------------
+info "Aktualisiere Repo auf ${NAS_HOST}:${REMOTE_REPO_PATH}..."
+ssh "$NAS_HOST" "cd '${REMOTE_REPO_PATH}' && git pull --ff-only" \
+    && ok "git pull OK" \
+    || warn "git pull fehlgeschlagen -- fahre mit lokalem Stand fort"
+
+# ---------------------------------------------------------------------------
+# bootstrap-forgejo.sh headless auf NAS ausfuehren
+# ---------------------------------------------------------------------------
+info "Starte bootstrap-forgejo.sh auf ${NAS_HOST}..."
+info "  Domain:     ${FORGEJO_DOMAIN}"
+info "  HAProxy IP: ${HAPROXY_IP}"
+info "  Admin:      ${ADMIN_USER} <${ADMIN_EMAIL}>"
+info "  Dry-run:    ${DRY_RUN_FLAG:-nein}"
+printf '\n'
+
+# Passwort wird per env-Variable uebergeben, nie als CLI-Argument
+# (vermeidet Sichtbarkeit in 'ps aux' auf dem NAS)
+ssh "$NAS_HOST" \
+    FORGEJO_ADMIN_PASS="${ADMIN_PASS}" \
+    "sh '${REMOTE_REPO_PATH}/qnap/forgejo/bootstrap-forgejo.sh' \
+        ${DRY_RUN_FLAG} \
+        ${REWRITE_FLAG} \
+        --haproxy '${HAPROXY_IP}' \
+        --admin-user '${ADMIN_USER}' \
+        --admin-email '${ADMIN_EMAIL}' \
+        --admin-pass \"\${FORGEJO_ADMIN_PASS}\" \
+        '${FORGEJO_DOMAIN}'"
+
+ok "bootstrap-forgejo.sh abgeschlossen."
+printf '\n'
+printf 'Naechste Schritte:\n'
+printf '  1. SSH Key hochladen:  bash services/forge/set-ssh-key.sh %s --url https://%s\n' "$ADMIN_USER" "$FORGEJO_DOMAIN"
+printf '  2. SSH testen:         ssh -T git@%s\n' "$FORGEJO_DOMAIN"
+printf '  3. Regression:         bash services/forge/test.sh --url https://%s\n' "$FORGEJO_DOMAIN"

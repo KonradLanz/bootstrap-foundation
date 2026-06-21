@@ -166,7 +166,9 @@ kl_bw_set() {
 
     if [ -n "$_existing_id" ]; then
         # Update: bestehendes Item mit neuem Passwort
-        bw get item "$_item" --session "$BW_SESSION" 2>/dev/null \
+        # xargs -I{} schlaegt auf macOS mit mehrzeiligem JSON fehl (Newlines).
+        # Stattdessen: encoded JSON in Variable, dann direkt uebergeben.
+        _updated_encoded=$(bw get item "$_item" --session "$BW_SESSION" 2>/dev/null \
             | python3 -c "
 import sys, json
 item = json.load(sys.stdin)
@@ -174,8 +176,8 @@ item['login']['password'] = sys.argv[1]
 item['login']['username'] = sys.argv[2]
 print(json.dumps(item))
 " "$_value" "$_username" \
-            | bw encode \
-            | xargs -I{} bw edit item "$_existing_id" {} --session "$BW_SESSION" >/dev/null 2>&1 \
+            | bw encode 2>/dev/null)
+        bw edit item "$_existing_id" "$_updated_encoded" --session "$BW_SESSION" >/dev/null 2>&1 \
             || { printf '⚠️  bw edit fehlgeschlagen fuer: %s\n' "$_item" >&2; return 1; }
     else
         # Neu erstellen

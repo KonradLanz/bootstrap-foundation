@@ -108,6 +108,24 @@ cat <<EOF
 # eingetragen, NICHT in haproxy.cfg direkt.
 # ===========================================================================
 
+# --- Frontend (TCP-SSH, Port 2222) ---
+# Name:        forgejo-ssh-frontend
+# Bindung:     *:2222
+# Mode:        tcp
+# Backend:     forgejo-ssh-backend
+# (kein SSL, kein ACL -- reiner TCP-Pass-through)
+
+# --- Backend (TCP-SSH) ---
+# Name:        forgejo-ssh-backend
+# Mode:        tcp
+# Server:
+#   Name:    forgejo-ssh
+#   Adresse: ${FORGEJO_HOST}
+#   Port:    2222
+#   Optionen: keine SSL, kein Verify
+
+# ===========================================================================
+
 # --- Frontend (HTTPS, Port 443) ---
 # Name:        forgejo-frontend
 # Bindung:     <externe-IP>:443  oder  *:443

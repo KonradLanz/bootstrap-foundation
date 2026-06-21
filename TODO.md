@@ -1,72 +1,111 @@
 # bootstrap-foundation — TODO
 
----
-
-## Gitea / Forgejo auf QNAP
-
-**Status:** Bootstrap-Scripts vorhanden (`qnap/gitea/`, `qnap/forgejo/`), noch nicht live deployed
-
-- [ ] Forgejo auf QNAP deployen: `sh qnap/forgejo/bootstrap-forgejo.sh --postgres --haproxy forgejo.own.dedyn.io`
-- [ ] Post-Setup: `sh qnap/forgejo/setup-forgejo.sh --disable-register`
-- [ ] Gitea: entscheiden ob Forgejo-only oder beide (Forgejo bevorzugt)
-- [ ] Shared PostgreSQL-Container deployen: `bootstrap-postgres.sh` (Voraussetzung fuer `--postgres`)
-- [ ] Services README aktualisieren sobald live
+> Priorisierte offene Punkte. Abgearbeitetes kommt in git history.
 
 ---
 
-## Vaultwarden auf QNAP
+## 🔴 SOFORT (Forgejo live kriegen)
 
-**Status:** Bootstrap-Scripts neu erstellt (`qnap/vaultwarden/`), noch nicht deployed  
-**Zweck:** Self-hosted Bitwarden-Server fuer hoKI-Secrets-Integration (email-analyser, local-ai-stack)
-
-- [ ] Vaultwarden deployen: `sh qnap/vaultwarden/bootstrap-vaultwarden.sh --haproxy vault.own.dedyn.io`
-- [ ] Erster Account anlegen, dann signups sperren: `sh qnap/vaultwarden/setup-vaultwarden.sh --disable-signups --setup-backup`
-- [ ] Bitwarden Browser-Extension + Mobile App auf `https://vault.own.dedyn.io` konfigurieren
-- [ ] `email-analyser`: IMAP/SMTP-Credentials in Vaultwarden ablegen, `.env` durch `bw get`-Aufrufe ersetzen
-- [ ] `local-ai-stack`: API-Keys (falls externe Dienste) analog migrieren
-- [ ] README.md der betroffenen Projekte mit bw-CLI-Snippet aktualisieren
-- [ ] In `services/README.md` Vaultwarden-Eintrag ergaenzen (analog Forgejo)
+- [ ] `bw config server https://vault.own.dedyn.io` + `bw login` auf Mac
+- [ ] Forgejo-Admin-Passwort via `bw generate` erstellen + in Vaultwarden speichern
+- [ ] `git config --global --add safe.directory ...` auf NAS (dubious ownership fix)
+- [ ] `git pull` auf NAS dann `bootstrap-forgejo.sh --admin-pass` mit bw-Passwort
+- [ ] HAProxy auf pfSense konfigurieren: Frontend 443 → Backend NAS:3000
+- [ ] DNS: `forgejo.own.dedyn.io` → `192.168.111.40`
 
 ---
 
-## MCP Tool: macOS System Settings
+## 🟠 Credential-Backend Architektur
 
-**Status:** Idee, noch nicht gebaut  
-**Kontext:** Das MCP-Tool für den Repo-Verzeichniszugriff (`LOCAL_MCP`) ist aktiv.
-Ein separates MCP-Tool das macOS `defaults` direkt lesen/schreiben kann existiert noch nicht.
+### Pattern (beschlossen)
 
-### Was es tun soll
+```
+Vaultwarden  = aktuelle Passwörter (primär, immer aktuell)
+KeePass      = Backup der aktuellen + History aller geänderter PWs
+GPG          = später entscheiden (evtl. für at-rest encryption von .kdbx)
+```
 
-- `defaults read <domain>` als MCP-Action exponieren (read-only)
-- `defaults write <domain> <key> <value>` mit Approval-Gate
-- Diff-Ansicht: aktuellen Zustand vs. letztem Snapshot aus `system-settings-tracker/`
-- Integration in AI-Assistenten: "Zeig mir alle controlcenter-Keys" direkt aus dem Chat
-- Optional: LaunchAgent-Status (is tracker running?)
+### Vaultwarden-Struktur (Ordner/Collections)
+```
+bootstrap-foundation/
+  forgejo/
+    forgejo-admin         (user: forgejo-admin, URL: https://forgejo.own.dedyn.io)
+    structured-pdf        (Projekt-User)
+  gitea/
+    gitea-admin
+  vaultwarden/
+    admin-token
+  nas/
+    admin-ssh             (NAS SSH)
+    samba-koni            (SMB)
+```
 
-### Referenz-Implementierung
+### KeePass-Struktur (.kdbx) = Backup + History
+```
+bootstrap-foundation/       ← Root-Gruppe
+  forge/
+    forgejo-admin_pass
+    forgejo-admin_token_*
+    structured-pdf_pass
+  vaultwarden/
+    admin_token
+  nas/
+    admin_pass
+```
 
-- Vorbild: `macos/system-settings-tracker/track.sh` (liest bereits alle relevanten Domains)
-- Analog zu: ETSI-MCP-Tool (anderes Projekt, gleiche MCP-Server-Architektur)
-- Sicherheitsmodell: raw plist lokal bleiben (`~/.local/system-settings-keeper/`),
-  MCP exponiert nur Diffs und Key-Listen — keine vollständigen Exports
-
-### Nächste Schritte
-
-1. MCP-Server-Boilerplate aus ETSI-Projekt als Vorlage nehmen
-2. Actions definieren: `read_domain`, `list_keys`, `write_key`, `get_diff`
-3. Approval-Pflicht für alle write-Actions (`_requires_user_approval: true`)
-4. In bootstrap.sh als optionalen MCP-Service registrieren
+### TODO: Mehrere alte KeePass-Files zusammenfassen
+- [ ] Bestehende `.kdbx`-Dateien inventarisieren (`find ~ -name '*.kdbx'`)
+- [ ] Merge-Script oder manuell in KeePassXC konsolidieren
+- [ ] Ziel: Ein Master `.kdbx` unter `~/KeePassLatest.kdbx`
+- [ ] Unterordner spiegeln Vaultwarden-Struktur
+- [ ] Alte Files nach Merge löschen / archivieren
 
 ---
 
-## Notch Flanken — Offene Punkte
+## 🟡 lib/secret-backends.sh Erweiterungen
 
-- [ ] Testen ob `NSStatusItemSpacing=6` nach nächstem macOS-Update erhalten bleibt
-- [ ] BentoBox-Einstellung "Immer anzeigen" für kritische Icons setzen
-      (macht `apply.sh` dauerhaft obsolet)
-- [ ] `system-settings-tracker` LaunchAgent installieren:
-      `bash ~/git/bootstrap-foundation/macos/system-settings-tracker/install-launchd.sh`
-- [ ] Ersten Snapshot manuell triggern (Baseline):
-      `bash ~/git/bootstrap-foundation/macos/system-settings-tracker/track.sh`
+- [ ] **Bitwarden-Backend** (`CREDENTIAL_BACKEND=bitwarden`) implementieren:
+  - `sb_bw_read KEY` → `bw get password "$KEY"`
+  - `sb_bw_write KEY VALUE USERNAME` → `bw create item` via JSON template
+  - `_sb_bw_unlock` → `BW_SESSION=$(bw unlock --raw)` wenn kein Session
+  - Auto-Detection: `keepassxc → bitwarden → gpg → plain`
+
+- [ ] **`services/forgejo/03-create-forgejo-users.sh`** updaten:
+  - Passwort zuerst aus Vaultwarden lesen (bw get)
+  - Fallback: KeePass, dann Prompt
+
+- [ ] **`services/forge/create-user.sh`** updaten:
+  - Gleicher Vaultwarden-first Fallback-Chain
 
 ---
+
+## 🟢 services/forge/ Ergänzungen
+
+- [ ] `set-deploy-key.sh` — SSH Deploy-Key für Repo via API
+- [ ] `README.md` updaten (create-repo.sh + create-token.sh dokumentieren)
+
+---
+
+## 🟢 services/vaultwarden/
+
+- [ ] `uninstall.sh` erstellen
+- [ ] `setup-bw-backend.sh` → setzt `CREDENTIAL_BACKEND=bitwarden` in `~/.env`
+- [ ] Session-Management (`BW_SESSION` Export) in `setup-bw-backend.sh`
+- [ ] email-analyser `.env` → Passwörter aus `bw get` statt Plaintext
+
+---
+
+## 🟢 NAS / QNAP
+
+- [ ] `git config --global --add safe.directory` permanent auf NAS (`~/.gitconfig`)
+- [ ] PATH dauerhaft in `~/.profile` auf NAS (Container Station + Entware)
+- [ ] IP-Migration `192.168.1.x` → `192.168.111.x` abschließen
+  - Details: `~/git/TODO-ip-migration.md`
+  - Vaultwarden `docker-compose.qnap.yml` Port-Binding prüfen
+
+---
+
+## 🔵 Später / GPG-Entscheidung
+
+- [ ] GPG-Rolle klären: at-rest encryption von KeePass `.kdbx`? Oder ablehnen?
+- [ ] `CREDENTIAL_BACKEND=gpg` bleibt als Fallback in `lib/secret-backends.sh`

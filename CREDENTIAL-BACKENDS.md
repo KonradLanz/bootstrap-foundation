@@ -140,6 +140,7 @@ brew install gnupg
 sudo apt install gnupg2
 ```
 
+<<<<<<< HEAD
 ---
 
 ## TODO: Bitwarden/Vaultwarden Backend (`bw` CLI)
@@ -289,6 +290,171 @@ git push --force --all
 
 ---
 
+||||||| 12074a8
+=======
+## TODO: Secret Detection – Vollstaendige Verteidigungsschichten
+
+> **Status:** [ ] Noch nicht implementiert
+
+Secret Detection und Secret Storage sind **zwei orthogonale Schichten** –
+sie loesen verschiedene Probleme und ergaenzen sich:
+
+| Schicht | Tool | Wo | Zweck |
+|---|---|---|---|
+| **Storage** | KeePass + GPG | lokal | Secrets nie als Plaintext auf Disk |
+| **Praevention lokal** | pre-commit Hook / `git-secrets` | lokal | Blockiert Commit bevor er entsteht |
+| **Praevention server** | GitHub Secret Scanning | GitHub | Scannt jeden Push auf bekannte Formate |
+| **Tiefenscan** | `trufflehog` | CI/CD + lokal | Scannt History, Entropie, verifiziert live |
+| **Archiv-Schutz** | `.gitattributes export-ignore` | Repo | Verhindert Secrets in ZIP-Exporten |
+
+### Schicht 1: pre-commit Hook (minimal, kein Tool-Install noetig)
+
+Ein einfacher Shell-Hook als erste Absicherung – blockiert `.env`-Commits
+und warnt bei verdaechtigen Patterns:
+
+```bash
+cat > .git/hooks/pre-commit << 'EOF'
+#!/bin/sh
+# Block commits that touch .env
+if git diff --cached --name-only | grep -qE '^.env$|^.env.local$'; then
+  echo "ERROR: Attempt to commit .env blocked by pre-commit hook."
+  exit 1
+fi
+# Warn on suspicious patterns in staged content
+if git diff --cached | grep -qiE '(password|secret|token|api_key)\s*=\s*[^$<{]'; then
+  echo "WARN: Possible credential in staged diff -- review carefully."
+  # exit 1  # auskommentieren fuer hard-block
+fi
+EOF
+chmod +x .git/hooks/pre-commit
+```
+
+> Dieser Hook lebt in `.git/hooks/` und wird nicht ins Repo eingecheckt.
+> Fuer Team-weite Hooks: `git-secrets --install` (Schicht 2) oder
+> `core.hooksPath` auf ein versioniertes Verzeichnis setzen.
+
+### Schicht 2: `git-secrets` als pre-commit Hook (lokal, Pattern-Registry)
+
+```bash
+brew install git-secrets       # macOS
+git secrets --install          # installiert Hook in .git/hooks/pre-commit
+git secrets --register-aws     # kennt AWS-Key-Pattern out-of-the-box
+
+# Projektspezifische Pattern (Gitea-Tokens, KeePass-Pass, etc.)
+git secrets --add 'KL_KEEPASS_PASS\s*=\s*[^$<{]'
+git secrets --add '[0-9a-f]{40}'  # Gitea API-Token-Format
+```
+
+Ersetzt den manuellen pre-commit Hook aus Schicht 1 durch eine pflegbare
+Pattern-Registry. Passt zum KeePass-Backend: `.env` landet nie auf Disk,
+aber versehentliches Hineinkopieren in Quellcode wird trotzdem gestoppt.
+
+### Schicht 3: GitHub Secret Scanning + Push Protection (serverseitig)
+
+GitHub scannt automatisch jeden Push auf bekannte Credential-Formate
+(AWS, GCP, Stripe, GitHub-Tokens, etc.). Bei Fund:
+- E-Mail-Benachrichtigung an Repository-Owner
+- Mit **Push Protection**: Push wird serverseitig blockiert, bevor er
+  in der History landet
+
+**Aktivieren unter:**
+> Settings → Security → Secret scanning → **Push protection: Enable**
+
+Diese Schicht greift unabhaengig von lokalen Hooks – schuetzt auch Forks
+und Pull Requests von Contributoren.
+
+### Schicht 4: `trufflehog` in CI/CD (tiefster Scan)
+
+```bash
+# Einmalig lokal – scannt komplette git-History
+trufflehog git file://. --only-verified
+
+# In Gitea Actions / GitHub Actions:
+- name: Secret Scan
+  uses: trufflesecurity/trufflehog@main
+  with:
+    path: ./
+    base: ${{ github.event.repository.default_branch }}
+    head: HEAD
+```
+
+`trufflehog` scannt tiefer als `git-secrets` (inkl. History, Entropie-Analyse,
+verifiziert ob Credentials noch aktiv sind) und laeuft serverseitig als
+zweite Sicherheitslinie nach GitHub Secret Scanning.
+
+### Schicht 5: `.gitattributes export-ignore`
+
+Verhindert, dass `.env` oder andere sensitive Dateien in `git archive`-
+Exporten (ZIP-Downloads ueber GitHub/Gitea UI) landen:
+
+```bash
+echo '.env export-ignore' >> .gitattributes
+echo '.env.local export-ignore' >> .gitattributes
+echo '*.pem export-ignore' >> .gitattributes
+echo '*.key export-ignore' >> .gitattributes
+```
+
+Diese Zeilen wirken nur wenn die Dateien versehentlich doch im Repo landen
+– als letzte Schutzschicht fuer den Distributionsweg.
+
+### Zusammenspiel aller Schichten
+
+```
+Entwickler tippt Secret einmal  →  sb_write speichert in KeePass/GPG
+                                          │
+                                          ▼
+                               .env wird NICHT auf Disk geschrieben
+                               Secrets leben nur im RAM (export FOO=...)
+                                          │
+                                          ▼
+                               pre-commit / git-secrets (Schicht 1+2)
+                               blockiert falls doch etwas durchgerutscht ist
+                                          │
+                                          ▼
+                               GitHub Push Protection (Schicht 3)
+                               blockiert serverseitig, unabh. von lokalem Setup
+                                          │
+                                          ▼
+                               trufflehog CI-Scan (Schicht 4)
+                               scannt History + verifiziert aktive Credentials
+                                          │
+                                          ▼
+                               .gitattributes export-ignore (Schicht 5)
+                               Secrets nicht in ZIP-Exporten/Releases
+```
+
+### WICHTIG: War `.env` je committed? History-Check
+
+Vor dem Aktivieren aller Schichten zuerst pruefen ob die History sauber ist:
+
+```bash
+# Pruefen ob .env jemals in der History war
+git log --all --full-history -- .env
+git log --all --full-history -- .env.local
+
+# Alle Dateien die je sensitive Namen hatten
+git log --all --full-history -- '*.pem' '*.key'
+```
+
+**Falls ein Treffer:** Credentials sofort rotieren (Token/Passwort unguelig
+machen), dann History bereinigen:
+
+```bash
+# git filter-repo (Nachfolger von git filter-branch)
+pip install git-filter-repo
+git filter-repo --path .env --invert-paths
+
+# Danach: alle Remotes neu setzen und force-push
+git remote add origin <url>
+git push --force --all
+git push --force --tags
+```
+
+> Das Bereinigen der History aendert alle Commit-SHAs. Alle Clones muessen
+> danach neu geklont werden. Bei public Repos: GitHub Support kontaktieren
+> um gecachte Views zu loeschen.
+
+>>>>>>> origin/feature/enter-once-cache
 ## Lizenzen
 
 | Tool | Lizenz | Auswirkung |
@@ -306,6 +472,7 @@ als Linking oder Combining. Shell-Skripte die nur aufrufen bleiben MIT.
 Referenzen:
 - https://www.gnu.org/licenses/gpl-faq.html#MereAggregation
 - https://keepassxc.org/docs/
+<<<<<<< HEAD
 - https://github.com/awslabs/git-secrets
 - https://github.com/trufflesecurity/trufflehog
 - https://github.com/newren/git-filter-repo
@@ -344,3 +511,10 @@ Referenzen:
   --path <file> --invert-paths` fuer einzelne Dateien in History sicher
   ist ohne den ganzen Repo-Graphen neu zu schreiben (technisch: ja, aber
   SHA-Kollateralschaden bleibt).
+||||||| 12074a8
+=======
+- https://github.com/awslabs/git-secrets
+- https://github.com/trufflesecurity/trufflehog
+- https://github.com/newren/git-filter-repo
+- https://docs.github.com/en/code-security/secret-scanning/push-protection-for-repositories-and-organizations
+>>>>>>> origin/feature/enter-once-cache

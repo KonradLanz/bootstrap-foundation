@@ -37,9 +37,18 @@ KL_KEEPASS_PASS_SESSION=""
 # ---------------------------------------------------------------------------
 sb_detect_backend() {
     case "${CREDENTIAL_BACKEND:-auto}" in
-        plain|gpg|keepassxc) printf '%s' "${CREDENTIAL_BACKEND}" ; return ;;
+        plain|gpg|keepassxc|vaultwarden) printf '%s' "${CREDENTIAL_BACKEND}" ; return ;;
     esac
-    # auto
+    # auto -- Prioritaet: vaultwarden > keepassxc > gpg > plain
+    # Vaultwarden nur wenn BW_SESSION aktiv und unlocked (kein Prompt hier)
+    if [ -n "${BW_SESSION:-}" ] && command -v bw >/dev/null 2>&1; then
+        _bw_st=$(bw status --session "$BW_SESSION" 2>/dev/null \
+            | python3 -c "import sys,json; print(json.load(sys.stdin).get('status',''))" \
+            2>/dev/null || true)
+        if [ "$_bw_st" = "unlocked" ]; then
+            printf 'vaultwarden'; return
+        fi
+    fi
     if command -v "$KEEPASSXC_CLI" >/dev/null 2>&1 && [ -f "$KL_KEEPASS_DB" ]; then
         printf 'keepassxc'
     elif command -v gpg >/dev/null 2>&1; then
@@ -152,6 +161,62 @@ sb_keepass_write() {
 }
 
 # ---------------------------------------------------------------------------
+# Vaultwarden helpers (bw CLI)
+#
+# Delegiert an lib/bw-session.sh wenn vorhanden.
+# KEY ist der logische Cache-Key (z.B. "nas/ssh_pass").
+# Item-Name in Vaultwarden: "kl: nas/ssh_pass"
+# ---------------------------------------------------------------------------
+
+_sb_bw_session_lib() {
+    # Lokalisiert bw-session.sh relativ zu diesem File
+    _dir=$(cd "$(dirname "$0")" 2>/dev/null && pwd || printf '%s/lib' "${KL_BOOTSTRAP_ROOT:-$HOME}")
+    for _candidate in \
+        "${KL_BOOTSTRAP_ROOT:-}/lib/bw-session.sh" \
+        "${_dir}/bw-session.sh" \
+        "${_dir}/../lib/bw-session.sh"
+    do
+        [ -f "$_candidate" ] && printf '%s' "$_candidate" && return
+    done
+}
+
+_sb_bw_sourced=0
+_sb_ensure_bw() {
+    [ "$_sb_bw_sourced" = "1" ] && return 0
+    _lib=$(_sb_bw_session_lib)
+    [ -z "$_lib" ] && return 1
+    # shellcheck source=/dev/null
+    . "$_lib"
+    _sb_bw_sourced=1
+}
+
+sb_vaultwarden_available() {
+    _sb_ensure_bw || return 1
+    command -v bw >/dev/null 2>&1 || return 1
+    bw status 2>/dev/null | python3 -c \
+        "import sys,json; s=json.load(sys.stdin); exit(0 if s.get('status')=='unlocked' else 1)" \
+        2>/dev/null
+}
+
+# KEY -> stdout (leer wenn nicht gefunden)
+sb_vaultwarden_read() {
+    _sb_ensure_bw || return 0
+    kl_bw_get "$1"
+}
+
+# KEY VALUE
+sb_vaultwarden_write() {
+    _sb_ensure_bw || return 0
+    kl_bw_set "$1" "$2"
+}
+
+# KEY
+sb_vaultwarden_delete() {
+    _sb_ensure_bw || return 0
+    kl_bw_delete "$1"
+}
+
+# ---------------------------------------------------------------------------
 # GPG helpers
 # ---------------------------------------------------------------------------
 
@@ -185,17 +250,19 @@ sb_plain_write() { printf '%s\n' "$2" > "$1"; }
 sb_read() {
     backend="$1"; target="$2"
     case "$backend" in
-        keepassxc) sb_keepass_read "$target" ;;
-        gpg)       sb_gpg_read "$target" ;;
-        *)         sb_plain_read "$target" ;;
+        vaultwarden) sb_vaultwarden_read "$target" ;;
+        keepassxc)   sb_keepass_read "$target" ;;
+        gpg)         sb_gpg_read "$target" ;;
+        *)           sb_plain_read "$target" ;;
     esac
 }
 
 sb_write() {
     backend="$1"; target="$2"; value="$3"; extra="${4:-bootstrap}"
     case "$backend" in
-        keepassxc) sb_keepass_write "$target" "$value" "$extra" ;;
-        gpg)       sb_gpg_write "$target" "$value" ;;
-        *)         sb_plain_write "$target" "$value" ;;
+        vaultwarden) sb_vaultwarden_write "$target" "$value" ;;
+        keepassxc)   sb_keepass_write "$target" "$value" "$extra" ;;
+        gpg)         sb_gpg_write "$target" "$value" ;;
+        *)           sb_plain_write "$target" "$value" ;;
     esac
 }

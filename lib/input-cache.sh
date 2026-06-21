@@ -244,7 +244,14 @@ kl_read_cached() {
                 _kl_read_input input "$sensitivity" "$prompt\n> "
             fi
             value="${input:-$default_value}"
-            if [ -n "$value" ]; then sb_write "$sensitivity" "$file" "$value"; fi
+            if [ -n "$value" ]; then
+                sb_write "$sensitivity" "$file" "$value"
+                # Vaultwarden: nach erstmaliger Eingabe sanft vorschlagen
+                # (nur wenn sensitivity != plain und Vault verfuegbar)
+                if [ "$sensitivity" != "plain" ] && command -v kl_bw_suggest_store >/dev/null 2>&1; then
+                    kl_bw_suggest_store "$key" "$value" || true
+                fi
+            fi
         else
             if [ -n "$default_value" ]; then
                 printf '%s\n[no cache, using default "%s"]\n' "$prompt" "$default_value" >&2

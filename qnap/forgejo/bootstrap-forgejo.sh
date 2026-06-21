@@ -20,7 +20,8 @@
 #                          Do NOT combine with --haproxy.
 #   --haproxy [IP]         TLS terminated at HAProxy/pfSense.
 #                          Forgejo listens on http, ROOT_URL uses https://.
-#                          Binds port to 127.0.0.1 only.
+#                          Binds port to NAS LAN-IP (auto-detected).
+#                          Firewall should restrict access to HAProxy-IP only.
 #                          IP = trusted proxy IP (default: 192.168.1.2)
 #   --ssl-dir PATH         Path to TLS certs             (default: /share/ssl/own.dedyn.io)
 #   --rewrite-compose      Overwrite existing docker-compose.yml
@@ -330,9 +331,16 @@ networks:
         PORT_BIND="\"${HTTP_PORT}:3000\""
         PROXY_ENV=""
     elif [ "$USE_HAPROXY" -eq 1 ]; then
+        # Bind auf NAS-Management-IP statt 127.0.0.1:
+        # HAProxy laeuft auf einer anderen Maschine (z.B. pfSense) und kann
+        # 127.0.0.1 des NAS nicht erreichen. Bind auf die LAN-IP des NAS damit
+        # nur HAProxy durchkommt -- Firewall-Regel schuetzt den Port zusaetzlich.
+        NAS_IP=$(ip route get 1.1.1.1 2>/dev/null | awk '/src/{print $NF; exit}' || \
+                 hostname -I 2>/dev/null | awk '{print $1}' || echo "0.0.0.0")
+        log_info "HAProxy mode: bind auf NAS-IP ${NAS_IP}:${HTTP_PORT}"
         PROTO_ENV="      - FORGEJO__server__PROTOCOL=http"
         TLS_VOLUME=""
-        PORT_BIND="\"127.0.0.1:${HTTP_PORT}:3000\""
+        PORT_BIND="\"${NAS_IP}:${HTTP_PORT}:3000\""
         PROXY_ENV="      - FORGEJO__security__REVERSE_PROXY_LIMIT=1
       - FORGEJO__security__REVERSE_PROXY_TRUSTED_PROXIES=${HAPROXY_IP}/32
       - FORGEJO__security__COOKIE_SECURE=true"

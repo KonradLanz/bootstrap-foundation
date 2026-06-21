@@ -106,6 +106,9 @@ if [ ! -d "$REPO_DIR" ]; then
           "Bitte zuerst: git clone https://github.com/KonradLanz/bootstrap-foundation.git ${REPO_DIR}"
 fi
 
+# safe.directory fuer AD-Domain-Pfade setzen (admin != repo-owner)
+git config --global --add safe.directory "$REPO_DIR" 2>/dev/null || true
+
 info "git pull in ${REPO_DIR}..."
 cd "$REPO_DIR"
 git pull origin main

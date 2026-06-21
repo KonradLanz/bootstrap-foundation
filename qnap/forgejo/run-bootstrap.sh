@@ -24,6 +24,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 export KL_BOOTSTRAP_ROOT="$REPO_ROOT"
 . "${REPO_ROOT}/lib/secret-backends.sh"
 . "${REPO_ROOT}/lib/input-cache.sh"
+. "${REPO_ROOT}/lib/bw-session.sh"
 
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[1;36m'; RED='\033[0;31m'; NC='\033[0m'
 info() { printf "${BLUE}[INFO]${NC}  %s\n" "$*"; }
@@ -67,6 +68,8 @@ done
 # ===========================================================================
 # PREFLIGHT -- alle interaktiven Eingaben hier, stdin noch sauber
 # ===========================================================================
+# Vaultwarden Session sicherstellen -- VOR SSH-Pipe, stdin noch TTY
+kl_bw_ensure_session || true
 BACKEND=$(sb_detect_backend)
 info "Credential-Backend: ${BACKEND}"
 

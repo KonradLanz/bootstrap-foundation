@@ -269,6 +269,9 @@ else
             "docker exec nas-postgres psql -U ${PG_SUPERUSER} -tc \"SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}'\" | grep -q 1 || docker exec nas-postgres psql -U ${PG_SUPERUSER} -c \"CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASS}';\""
         execute_cmd "Create database '${DB_NAME}' owned by '${DB_USER}'" \
             "docker exec nas-postgres psql -U ${PG_SUPERUSER} -tc \"SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'\" | grep -q 1 || docker exec nas-postgres psql -U ${PG_SUPERUSER} -c \"CREATE DATABASE ${DB_NAME} OWNER ${DB_USER} ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE template0;\""
+        # PG15+: GRANT SCHEMA public -- ohne das schlaegt CREATE TABLE fehl
+        execute_cmd "Grant schema public to '${DB_USER}'" \
+            "docker exec nas-postgres psql -U ${PG_SUPERUSER} -c \"GRANT ALL ON SCHEMA public TO ${DB_USER};\" ${DB_NAME}"
 
         DB_ENV="      - GITEA__database__DB_TYPE=postgres
       - GITEA__database__HOST=nas-postgres:5432
@@ -297,9 +300,12 @@ networks:
         PORT_BIND="\"${HTTP_PORT}:3000\""
         PROXY_ENV=""
     elif [ "$USE_HAPROXY" -eq 1 ]; then
+        NAS_IP=$(ip route get 1.1.1.1 2>/dev/null | awk '/src/{print $NF; exit}' || \
+                 hostname -I 2>/dev/null | awk '{print $1}' || echo "0.0.0.0")
+        log_info "HAProxy mode: bind auf NAS-IP ${NAS_IP}:${HTTP_PORT}"
         PROTO_ENV="      - GITEA__server__PROTOCOL=http"
         TLS_VOLUME=""
-        PORT_BIND="\"127.0.0.1:${HTTP_PORT}:3000\""
+        PORT_BIND="\"${NAS_IP}:${HTTP_PORT}:3000\""
         PROXY_ENV="      - GITEA__security__REVERSE_PROXY_LIMIT=1
       - GITEA__security__REVERSE_PROXY_TRUSTED_PROXIES=${HAPROXY_IP}/32
       - GITEA__security__COOKIE_SECURE=true"

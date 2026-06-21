@@ -61,6 +61,7 @@ while [ $# -gt 0 ]; do
         --verbose|-v)      VERBOSE=1;  shift ;;
         --postgres)        USE_POSTGRES=1; shift ;;
         --sqlite)          USE_POSTGRES=0; shift ;;  # explizit SQLite erzwingen
+        --yes)             ALWAYS_CONFIRM=1; shift ;;
         --tls)             USE_TLS=1;  shift ;;
         --haproxy)
             USE_HAPROXY=1

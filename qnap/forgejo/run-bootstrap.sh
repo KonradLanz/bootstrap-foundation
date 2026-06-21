@@ -37,6 +37,7 @@ ADMIN_USER="forgejo-admin"
 ADMIN_EMAIL="admin@${FORGEJO_DOMAIN}"
 DRY_RUN_FLAG=""
 REWRITE_FLAG=""
+YES_FLAG=""
 
 # ---------------------------------------------------------------------------
 # Args
@@ -45,6 +46,7 @@ while [ $# -gt 0 ]; do
     case "$1" in
         --dry-run)        DRY_RUN_FLAG="--dry-run";       shift ;;
         --rewrite-compose) REWRITE_FLAG="--rewrite-compose"; shift ;;
+        --yes)            YES_FLAG="--yes";                shift ;;
         --domain)         FORGEJO_DOMAIN="$2";            shift 2 ;;
         --admin-user)     ADMIN_USER="$2";                shift 2 ;;
         --admin-email)    ADMIN_EMAIL="$2";               shift 2 ;;
@@ -120,9 +122,10 @@ printf '\n'
 # SSH-Commandline (wäre sichtbar in 'ps aux' auf dem NAS).
 # bootstrap-on-nas.sh liest ADMIN_PASS aus erster stdin-Zeile.
 printf '%s\n' "$ADMIN_PASS" | ssh "$NAS_HOST" \
-    "sh '${REMOTE_REPO_PATH}/qnap/forgejo/bootstrap-on-nas.sh' \
+    "ALWAYS_CONFIRM=${YES_FLAG:+1}${YES_FLAG:-0} sh '${REMOTE_REPO_PATH}/qnap/forgejo/bootstrap-on-nas.sh' \
         ${DRY_RUN_FLAG} \
         ${REWRITE_FLAG} \
+        ${YES_FLAG} \
         --haproxy '${HAPROXY_IP}' \
         --local-ip '${LOCAL_IP}' \
         --admin-user '${ADMIN_USER}' \

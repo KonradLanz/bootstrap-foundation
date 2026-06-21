@@ -31,10 +31,12 @@ READ_PASS_STDIN=0
 # ── Args ─────────────────────────────────────────────────────────────────────
 DRY_RUN_FLAG=""
 REWRITE_FLAG=""
+YES_FLAG=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --dry-run)         DRY_RUN_FLAG="--dry-run";        shift ;;
         --rewrite-compose) REWRITE_FLAG="--rewrite-compose"; shift ;;
+        --yes)             YES_FLAG="--yes"; ALWAYS_CONFIRM=1; export ALWAYS_CONFIRM; shift ;;
         --haproxy)         HAPROXY_IP="$2";                 shift 2 ;;
         --admin-user)      ADMIN_USER="$2";                 shift 2 ;;
         --admin-email)     ADMIN_EMAIL="$2";                shift 2 ;;
@@ -121,6 +123,7 @@ printf '\n'
 sh "${REPO_DIR}/qnap/forgejo/bootstrap-forgejo.sh" \
     ${DRY_RUN_FLAG} \
     ${REWRITE_FLAG} \
+    ${YES_FLAG} \
     --haproxy "$HAPROXY_IP" \
     --admin-user "$ADMIN_USER" \
     --admin-email "$ADMIN_EMAIL" \

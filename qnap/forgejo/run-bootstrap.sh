@@ -18,6 +18,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 export KL_BOOTSTRAP_ROOT="$REPO_ROOT"
 . "${REPO_ROOT}/lib/secret-backends.sh"
+. "${REPO_ROOT}/lib/input-cache.sh"
 
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[1;36m'; RED='\033[0;31m'; NC='\033[0m'
 info() { printf "${BLUE}[INFO]${NC}  %s\n" "$*"; }
@@ -138,8 +139,12 @@ ok "bootstrap-forgejo.sh abgeschlossen."
 # ---------------------------------------------------------------------------
 # Phase 2: Primary User anlegen
 # ---------------------------------------------------------------------------
-PRIMARY_USER="$(kl_read_cached 'forgejo/primary_user' 'Forgejo Primary Username' 2>/dev/null || whoami)"
-PRIMARY_EMAIL="$(kl_read_cached 'forgejo/primary_email' 'Forgejo Primary Email' 2>/dev/null || echo "${PRIMARY_USER}@${FORGEJO_DOMAIN}")"
+# stdin nach SSH-Pipe wiederherstellen -- kl_read_cached braucht /dev/tty
+exec </dev/tty 2>/dev/null || true
+kl_read_cached PRIMARY_USER 'forgejo/primary_user' 'Forgejo Primary Username'
+kl_read_cached PRIMARY_EMAIL 'forgejo/primary_email' 'Forgejo Primary Email'
+PRIMARY_USER="${PRIMARY_USER:-$(whoami)}"
+PRIMARY_EMAIL="${PRIMARY_EMAIL:-${PRIMARY_USER}@${FORGEJO_DOMAIN}}"
 PRIMARY_PASS_KEY="forgejo/${PRIMARY_USER}_pass"
 
 info "Phase 2: Primary User '${PRIMARY_USER}' anlegen..."

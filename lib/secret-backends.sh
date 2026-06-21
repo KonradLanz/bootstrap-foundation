@@ -170,7 +170,9 @@ sb_keepass_write() {
 
 _sb_bw_session_lib() {
     # Lokalisiert bw-session.sh relativ zu diesem File
-    _dir=$(cd "$(dirname "$0")" 2>/dev/null && pwd || printf '%s/lib' "${KL_BOOTSTRAP_ROOT:-$HOME}")
+    # BASH_SOURCE[0] funktioniert auch bei 'source', $0 nicht
+    _self="${BASH_SOURCE[0]:-${(%):-%x}}"
+    _dir=$(cd "$(dirname "$_self")" 2>/dev/null && pwd || printf '%s/lib' "${KL_BOOTSTRAP_ROOT:-$HOME}")
     for _candidate in \
         "${KL_BOOTSTRAP_ROOT:-}/lib/bw-session.sh" \
         "${_dir}/bw-session.sh" \

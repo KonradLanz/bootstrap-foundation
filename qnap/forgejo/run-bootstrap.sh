@@ -134,8 +134,72 @@ printf '%s\n' "$ADMIN_PASS" | ssh "$NAS_HOST" \
         '${FORGEJO_DOMAIN}'"
 
 ok "bootstrap-forgejo.sh abgeschlossen."
+
+# ---------------------------------------------------------------------------
+# Phase 2: Primary User anlegen
+# ---------------------------------------------------------------------------
+PRIMARY_USER="$(kl_read_cached 'forgejo/primary_user' 'Forgejo Primary Username' 2>/dev/null || whoami)"
+PRIMARY_EMAIL="$(kl_read_cached 'forgejo/primary_email' 'Forgejo Primary Email' 2>/dev/null || echo "${PRIMARY_USER}@${FORGEJO_DOMAIN}")"
+PRIMARY_PASS_KEY="forgejo/${PRIMARY_USER}_pass"
+
+info "Phase 2: Primary User '${PRIMARY_USER}' anlegen..."
+
+PRIMARY_PASS=$(sb_read "$BACKEND" "$PRIMARY_PASS_KEY" 2>/dev/null || true)
+
+if [ -z "$PRIMARY_PASS" ]; then
+    PRIMARY_PASS=$(LC_ALL=C tr -dc 'A-Za-z0-9!@#%^&*' < /dev/urandom | head -c 32)
+    sb_write "$BACKEND" "$PRIMARY_PASS_KEY" "$PRIMARY_PASS" "$PRIMARY_USER"
+    ok "Passwort generiert + gespeichert: ${PRIMARY_PASS_KEY}"
+else
+    ok "Passwort aus Backend geladen: ${PRIMARY_PASS_KEY}"
+fi
+
+HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' \
+    -X POST "https://${FORGEJO_DOMAIN}/api/v1/admin/users" \
+    -u "${ADMIN_USER}:${ADMIN_PASS}" \
+    -H "Content-Type: application/json" \
+    -d "{
+        \"username\": \"${PRIMARY_USER}\",
+        \"email\": \"${PRIMARY_EMAIL}\",
+        \"password\": \"${PRIMARY_PASS}\",
+        \"must_change_password\": false,
+        \"send_notify\": false
+    }")
+
+case "$HTTP_CODE" in
+    201) ok "User '${PRIMARY_USER}' angelegt" ;;
+    422) warn "User '${PRIMARY_USER}' existiert bereits — ueberspringe" ;;
+    *)   die "User-Anlage fehlgeschlagen (HTTP ${HTTP_CODE})" ;;
+esac
+
+# ---------------------------------------------------------------------------
+# Phase 3: SSH-Key fuer Primary User hinterlegen
+# ---------------------------------------------------------------------------
+SSH_KEY_PATH="${HOME}/.ssh/id_ed25519.pub"
+[ -f "$SSH_KEY_PATH" ] || SSH_KEY_PATH="${HOME}/.ssh/id_rsa.pub"
+
+if [ -f "$SSH_KEY_PATH" ]; then
+    SSH_KEY_TITLE="$(hostname -s)"
+    HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' \
+        -X POST "https://${FORGEJO_DOMAIN}/api/v1/user/keys" \
+        -u "${PRIMARY_USER}:${PRIMARY_PASS}" \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"key\": \"$(cat "$SSH_KEY_PATH")\",
+            \"read_only\": false,
+            \"title\": \"${SSH_KEY_TITLE}\"
+        }")
+    case "$HTTP_CODE" in
+        201) ok "SSH-Key '${SSH_KEY_TITLE}' hinterlegt" ;;
+        422) warn "SSH-Key bereits vorhanden — ueberspringe" ;;
+        *)   warn "SSH-Key Upload fehlgeschlagen (HTTP ${HTTP_CODE})" ;;
+    esac
+else
+    warn "Kein SSH Public Key gefunden (~/.ssh/id_ed25519.pub)"
+fi
+
 printf '\n'
 printf 'Naechste Schritte:\n'
-printf '  1. SSH Key hochladen:  bash services/forge/set-ssh-key.sh %s --url https://%s\n' "$ADMIN_USER" "$FORGEJO_DOMAIN"
-printf '  2. SSH testen:         ssh -T git@%s\n' "$FORGEJO_DOMAIN"
+printf '  1. SSH testen:         ssh -T git@%s\n' "$FORGEJO_DOMAIN"
+printf '  2. dotAI pushen:       cd ~/git/dotAI && git push forgejo main\n'
 printf '  3. Regression:         bash services/forge/test.sh --url https://%s\n' "$FORGEJO_DOMAIN"

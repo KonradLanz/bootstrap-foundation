@@ -11,14 +11,53 @@
 # sourcing this file, or set KL_BOOTSTRAP_ROOT so this file can find it.
 #
 # Sensitivity values for kl_read_cached:
-#   plain      - plain text (URLs, usernames, non-sensitive)
-#   gpg        - symmetric AES-256 via GnuPG
-#   keepassxc  - keepassxc-cli against a .kdbx database
-#   auto       - auto-detect via sb_detect_backend (default)
+#   plain      - plain text (URLs, usernames, non-sensitive) -- input VISIBLE
+#   gpg        - symmetric AES-256 via GnuPG                -- input HIDDEN (read -s)
+#   keepassxc  - keepassxc-cli against a .kdbx database     -- input HIDDEN (read -s)
+#   auto       - auto-detect via sb_detect_backend (default) -- HIDDEN if backend != plain
+#
+# IMPORTANT: Any sensitivity != plain triggers silent input (read -s / stty -echo).
+# This covers passwords, tokens, API keys -- anything that must not appear in terminal.
 #
 # This file is designed to be sourced from other scripts.
 
 set -eu
+
+# ---------------------------------------------------------------------------
+# _kl_read_input VAR SENSITIVITY PROMPT
+#
+# Central read helper -- ALWAYS silent (read -s) for non-plain sensitivity.
+# Covers: passwords, tokens, API keys, passphrases.
+# Plain text (URLs, usernames): read -r (visible).
+# ---------------------------------------------------------------------------
+_kl_read_input() {
+    _kl_var="$1"
+    _kl_sens="$2"
+    _kl_prompt="$3"
+    _kl_input=""
+
+    if [ "$_kl_sens" = "plain" ]; then
+        # Visible input -- safe for non-sensitive data
+        printf '%s' "$_kl_prompt" >&2
+        read -r _kl_input || _kl_input=""
+    else
+        # Silent input -- passwords, tokens, API keys
+        # Use read -s if available (bash/zsh), fallback to stty -echo for POSIX sh
+        printf '%s' "$_kl_prompt" >&2
+        if ( read -rs _kl_test_silent 2>/dev/null </dev/null ); then
+            read -rs _kl_input 2>/dev/null || _kl_input=""
+        else
+            # POSIX sh fallback: stty -echo
+            _kl_old_stty="$(stty -g 2>/dev/null || true)"
+            stty -echo 2>/dev/null || true
+            read -r _kl_input || _kl_input=""
+            stty "$_kl_old_stty" 2>/dev/null || true
+        fi
+        printf '\n' >&2  # Newline after silent input
+    fi
+
+    eval "$_kl_var=\"$_kl_input\""
+}
 
 # ---------------------------------------------------------------------------
 # Locate and source secret-backends.sh
@@ -143,8 +182,7 @@ kl_read_cached() {
             cached_val="$(sb_keepass_read "$key" 2>/dev/null || true)"
             if [ -n "$cached_val" ]; then
                 if [ "$run_mode" = "interactive" ]; then
-                    printf '%s [Enter = reuse from KeePass]\n> ' "$prompt" >&2
-                    read -r input || input=""
+                    _kl_read_input input "$sensitivity" "$prompt [Enter = reuse from KeePass]\n> "
                     if [ -z "$input" ]; then
                         eval "$var_name=\"$cached_val\""
                         return 0
@@ -159,8 +197,7 @@ kl_read_cached() {
                 fi
             fi
             # Not in KeePass yet
-            printf '%s [will be saved to KeePass]\n> ' "$prompt" >&2
-            read -r input || input=""
+            _kl_read_input input "$sensitivity" "$prompt [will be saved to KeePass]\n> "
             value="${input:-$default_value}"
             if [ -n "$value" ]; then sb_keepass_write "$key" "$value"; fi
             eval "$var_name=\"$value\""
@@ -187,8 +224,7 @@ kl_read_cached() {
 
     if [ -f "$file" ]; then
         if [ "$run_mode" = "interactive" ]; then
-            printf '%s [Enter = reuse cached]\n> ' "$prompt" >&2
-            read -r input || input=""
+            _kl_read_input input "$sensitivity" "$prompt [Enter = reuse cached]\n> "
             if [ -z "$input" ]; then
                 value="$(sb_read "$sensitivity" "$file")"
             else
@@ -203,11 +239,10 @@ kl_read_cached() {
     else
         if [ "$run_mode" = "interactive" ]; then
             if [ -n "$default_value" ]; then
-                printf '%s [default: %s]\n> ' "$prompt" "$default_value" >&2
+                _kl_read_input input "$sensitivity" "$prompt [default: $default_value]\n> "
             else
-                printf '%s\n> ' "$prompt" >&2
+                _kl_read_input input "$sensitivity" "$prompt\n> "
             fi
-            read -r input || input=""
             value="${input:-$default_value}"
             if [ -n "$value" ]; then sb_write "$sensitivity" "$file" "$value"; fi
         else
@@ -219,7 +254,7 @@ kl_read_cached() {
             else
                 printf '%s\n[no cache and no default for "%s" - waiting for input]\n> ' \
                     "$prompt" "$key" >&2
-                read -r input || input=""
+                _kl_read_input input "$sensitivity" ""
                 value="$input"
                 if [ -n "$value" ]; then sb_write "$sensitivity" "$file" "$value"; fi
             fi

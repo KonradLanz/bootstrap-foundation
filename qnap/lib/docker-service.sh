@@ -186,7 +186,7 @@ get_management_ip() {
         printf "  ${GREEN}%d)${NC} %-12s %s\n" "$_idx" "$_if" "$_ip"
     done < "$_ip_tmp"
     printf "\n${BLUE}[INFO]${NC} Enter number [1-%d] (default: 1): " "$_count"
-    read -r _choice
+    read -r _choice < /dev/tty
     case "$_choice" in ''|0) _choice=1 ;; esac
     if ! expr "$_choice" : '^[0-9][0-9]*$' >/dev/null 2>&1 \
         || [ "$_choice" -lt 1 ] || [ "$_choice" -gt "$_count" ]; then
@@ -259,7 +259,7 @@ select_volume() {
     done < "$_tf"
 
     printf "\n${BLUE}[INFO]${NC} Enter share number [1-%d] (default: 1): " "$_max"
-    read -r _choice
+    read -r _choice < /dev/tty
 
     case "$_choice" in
         ''|0) _choice=1 ;;

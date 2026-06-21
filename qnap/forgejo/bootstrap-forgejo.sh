@@ -202,7 +202,7 @@ fi
 if [ -z "$ADMIN_PASS" ]; then
     printf "\n${YELLOW}[INPUT]${NC} Forgejo admin password for '%s': " "$ADMIN_USER"
     stty -echo 2>/dev/null || true
-    read -r ADMIN_PASS
+    read -r ADMIN_PASS < /dev/tty
     stty echo 2>/dev/null || true
     printf "\n"
 fi
@@ -256,7 +256,7 @@ else
         if [ -z "$PG_SUPERPASS" ]; then
             printf "\n${YELLOW}[INPUT]${NC} PostgreSQL superuser password for '%s': " "$PG_SUPERUSER"
             stty -echo 2>/dev/null || true
-            read -r PG_SUPERPASS
+            read -r PG_SUPERPASS < /dev/tty
             stty echo 2>/dev/null || true
             printf "\n"
         fi

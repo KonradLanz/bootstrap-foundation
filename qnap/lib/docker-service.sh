@@ -80,7 +80,7 @@ confirm_action() {
     printf "\n${YELLOW}ACTION: %s${NC}\n" "$_adesc"
     printf "${YELLOW}  [O]K  [A]BORT  [L]WAYS (always OK)${NC}\n"
     printf "${GREEN}Choice:${NC} "
-    read -r _resp
+    read -r _resp < /dev/tty
     case "$_resp" in
         [Oo]*) return 0 ;;
         [Ll]*) ALWAYS_CONFIRM=1; return 0 ;;

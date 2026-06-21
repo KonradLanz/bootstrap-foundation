@@ -63,6 +63,10 @@ BACKEND=$(sb_detect_backend)
 info "Credential-Backend: ${BACKEND}"
 
 PASS_KEY="forgejo/${ADMIN_USER}_pass"
+# Sicherstellen dass lokaler bw-Cache aktuell ist
+if [ "$BACKEND" = "vaultwarden" ] && [ -n "${BW_SESSION:-}" ]; then
+    bw sync --session "$BW_SESSION" >/dev/null 2>&1 || true
+fi
 ADMIN_PASS=$(sb_read "$BACKEND" "$PASS_KEY" 2>/dev/null || true)
 
 if [ -z "$ADMIN_PASS" ]; then
@@ -97,7 +101,7 @@ fi
 # Repo auf NAS aktuell halten (git pull)
 # ---------------------------------------------------------------------------
 info "Aktualisiere Repo auf ${NAS_HOST}:${REMOTE_REPO_PATH}..."
-ssh "$NAS_HOST" "cd '${REMOTE_REPO_PATH}' && git pull --ff-only" \
+ssh "$NAS_HOST" "export PATH=/opt/bin:/share/CACHEDEV1_DATA/.qpkg/container-station/bin:\$PATH && git config --global --add safe.directory '${REMOTE_REPO_PATH}' 2>/dev/null; cd '${REMOTE_REPO_PATH}' && git pull --ff-only" \
     && ok "git pull OK" \
     || warn "git pull fehlgeschlagen -- fahre mit lokalem Stand fort"
 

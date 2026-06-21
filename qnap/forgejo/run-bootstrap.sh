@@ -65,13 +65,25 @@ ADMIN_PASS=$(sb_read "$BACKEND" "$PASS_KEY" 2>/dev/null || true)
 
 if [ -z "$ADMIN_PASS" ]; then
     warn "Kein Passwort im Backend unter '${PASS_KEY}'"
-    printf "Neues Passwort fuer '%s': " "$ADMIN_USER" >&2
-    read -rs ADMIN_PASS; printf '\n' >&2
-    [ -z "$ADMIN_PASS" ] && die "Passwort darf nicht leer sein."
 
-    printf "Passwort in Backend speichern? [y/N] " >&2
+    # Default-Passwort vorschlagen (zufaellig, 32 Zeichen)
+    DEFAULT_PASS=$(LC_ALL=C tr -dc 'A-Za-z0-9!@#%^&*' < /dev/urandom | head -c 32 || true)
+    printf "Neues Passwort fuer '%s'\n" "$ADMIN_USER" >&2
+    printf "  [Enter]  = zufaelliges Passwort verwenden (%d Zeichen, versteckt)\n" "${#DEFAULT_PASS}" >&2
+    printf "  Eingabe  = eigenes Passwort (versteckt, Laenge wird angezeigt)\n" >&2
+    printf "Passwort: " >&2
+    read -rs ADMIN_PASS; printf '\n' >&2
+
+    if [ -z "$ADMIN_PASS" ]; then
+        ADMIN_PASS="$DEFAULT_PASS"
+        ok "Zufaelliges Passwort generiert (${#ADMIN_PASS} Zeichen)"
+    else
+        ok "Passwort eingegeben (${#ADMIN_PASS} Zeichen)"
+    fi
+
+    printf "Passwort in Backend speichern? [Y/n] " >&2
     read -r SAVE_PASS
-    if [ "${SAVE_PASS:-n}" = "y" ] || [ "${SAVE_PASS:-n}" = "Y" ]; then
+    if [ "${SAVE_PASS:-y}" != "n" ] && [ "${SAVE_PASS:-y}" != "N" ]; then
         sb_write "$BACKEND" "$PASS_KEY" "$ADMIN_PASS" "$ADMIN_USER"
         ok "Passwort gespeichert: ${PASS_KEY}"
     fi

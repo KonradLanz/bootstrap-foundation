@@ -12,6 +12,7 @@ SPACING_TARGET=6
 
 print_status() { printf '[%s] %s\n' "$1" "$2" }
 
+
 NEEDS_RESTART=0
 
 apply_bool() {

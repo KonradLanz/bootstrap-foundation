@@ -124,10 +124,17 @@ MODE      = file
 LEVEL     = Warn
 
 [security]
-INSTALL_LOCK       = false
-SECRET_KEY         =
-INTERNAL_TOKEN     =
-PASSWORD_HASH_ALGO = pbkdf2
+INSTALL_LOCK                   = false
+SECRET_KEY                     =
+INTERNAL_TOKEN                 =
+PASSWORD_HASH_ALGO             = argon2
+COOKIE_SECURE                  = true
+COOKIE_SAMESITE                = lax
+REVERSE_PROXY_LIMIT            = 1
+REVERSE_PROXY_TRUSTED_PROXIES  = 127.0.0.1/32,::1/128
+
+[session]
+COOKIE_SECURE = true
 
 [service]
 DISABLE_REGISTRATION = false

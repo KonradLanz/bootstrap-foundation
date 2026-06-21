@@ -66,7 +66,8 @@ write_file() {
 }
 
 # ── Confirmation prompt ───────────────────────────────────────────────────────
-ALWAYS_CONFIRM=0
+# Env-Override: ALWAYS_CONFIRM=1 kann von aussen gesetzt werden (headless/--yes)
+ALWAYS_CONFIRM=${ALWAYS_CONFIRM:-0}
 
 confirm_action() {
     # confirm_action <description>

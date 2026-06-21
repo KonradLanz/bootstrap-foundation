@@ -24,7 +24,30 @@ FORGEJO_DOMAIN="forgejo.own.dedyn.io"
 HAPROXY_IP="192.168.111.40"
 ADMIN_USER="forgejo-admin"
 ADMIN_EMAIL="admin@own.dedyn.io"
-REPO_DIR="${HOME}/git/bootstrap-foundation"
+REPO_DIR="/share/CE_CACHEDEV4_DATA/homes/DOMAIN=AD/koni/git/bootstrap-foundation"
+ADMIN_PASS=""
+READ_PASS_STDIN=0
+
+# ── Args ─────────────────────────────────────────────────────────────────────
+DRY_RUN_FLAG=""
+REWRITE_FLAG=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --dry-run)         DRY_RUN_FLAG="--dry-run";        shift ;;
+        --rewrite-compose) REWRITE_FLAG="--rewrite-compose"; shift ;;
+        --haproxy)         HAPROXY_IP="$2";                 shift 2 ;;
+        --admin-user)      ADMIN_USER="$2";                 shift 2 ;;
+        --admin-email)     ADMIN_EMAIL="$2";                shift 2 ;;
+        --admin-pass)      ADMIN_PASS="$2";                 shift 2 ;;
+        --read-pass-stdin) READ_PASS_STDIN=1;               shift ;;
+        *)                 FORGEJO_DOMAIN="$1";             shift ;;
+    esac
+done
+
+# Passwort aus stdin lesen (erste Zeile) wenn angefordert
+if [ "$READ_PASS_STDIN" = "1" ] && [ -z "$ADMIN_PASS" ]; then
+    read -r ADMIN_PASS || true
+fi
 
 # ── 1. PATH erweitern ────────────────────────────────────────────────────────
 info "Setze PATH..."
@@ -92,8 +115,10 @@ ok "Repo aktuell: $(git log --oneline -1)"
 info "Starte Forgejo Bootstrap..."
 printf '\n'
 sh "${REPO_DIR}/qnap/forgejo/bootstrap-forgejo.sh" \
-    --postgres \
+    ${DRY_RUN_FLAG} \
+    ${REWRITE_FLAG} \
     --haproxy "$HAPROXY_IP" \
     --admin-user "$ADMIN_USER" \
     --admin-email "$ADMIN_EMAIL" \
+    ${ADMIN_PASS:+--admin-pass "$ADMIN_PASS"} \
     "$FORGEJO_DOMAIN"

@@ -28,7 +28,7 @@ die()  { printf "${RED}[ERROR]${NC} %s\n" "$*" >&2; exit 1; }
 # Konfiguration
 # ---------------------------------------------------------------------------
 NAS_HOST="nas"
-REMOTE_REPO_PATH="/share/homes/koni/bootstrap-foundation"
+REMOTE_REPO_PATH="/share/CE_CACHEDEV4_DATA/homes/DOMAIN=AD/koni/git/bootstrap-foundation"
 FORGEJO_DOMAIN="forgejo.own.dedyn.io"
 HAPROXY_IP="192.168.111.40"
 ADMIN_USER="forgejo-admin"
@@ -109,17 +109,17 @@ info "  Admin:      ${ADMIN_USER} <${ADMIN_EMAIL}>"
 info "  Dry-run:    ${DRY_RUN_FLAG:-nein}"
 printf '\n'
 
-# Passwort wird per env-Variable uebergeben, nie als CLI-Argument
-# (vermeidet Sichtbarkeit in 'ps aux' auf dem NAS)
-ssh "$NAS_HOST" \
-    FORGEJO_ADMIN_PASS="${ADMIN_PASS}" \
-    "sh '${REMOTE_REPO_PATH}/qnap/forgejo/bootstrap-forgejo.sh' \
+# Passwort wird per stdin uebergeben -- nie als CLI-Argument oder Env in der
+# SSH-Commandline (wäre sichtbar in 'ps aux' auf dem NAS).
+# bootstrap-on-nas.sh liest ADMIN_PASS aus erster stdin-Zeile.
+printf '%s\n' "$ADMIN_PASS" | ssh "$NAS_HOST" \
+    "sh '${REMOTE_REPO_PATH}/qnap/forgejo/bootstrap-on-nas.sh' \
         ${DRY_RUN_FLAG} \
         ${REWRITE_FLAG} \
         --haproxy '${HAPROXY_IP}' \
         --admin-user '${ADMIN_USER}' \
         --admin-email '${ADMIN_EMAIL}' \
-        --admin-pass \"\${FORGEJO_ADMIN_PASS}\" \
+        --read-pass-stdin \
         '${FORGEJO_DOMAIN}'"
 
 ok "bootstrap-forgejo.sh abgeschlossen."

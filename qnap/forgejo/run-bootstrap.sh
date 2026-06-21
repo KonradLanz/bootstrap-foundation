@@ -31,6 +31,7 @@ NAS_HOST="nas"
 REMOTE_REPO_PATH="/share/CE_CACHEDEV4_DATA/homes/DOMAIN=AD/koni/git/bootstrap-foundation"
 FORGEJO_DOMAIN="forgejo.own.dedyn.io"
 HAPROXY_IP="192.168.111.40"
+LOCAL_IP="192.168.111.42"
 ADMIN_USER="forgejo-admin"
 ADMIN_EMAIL="admin@${FORGEJO_DOMAIN}"
 DRY_RUN_FLAG=""
@@ -47,6 +48,7 @@ while [ $# -gt 0 ]; do
         --admin-user)     ADMIN_USER="$2";                shift 2 ;;
         --admin-email)    ADMIN_EMAIL="$2";               shift 2 ;;
         --haproxy-ip)     HAPROXY_IP="$2";               shift 2 ;;
+        --local-ip)       LOCAL_IP="$2";                 shift 2 ;;
         --remote-path)    REMOTE_REPO_PATH="$2";          shift 2 ;;
         --help|-h)
             grep '^#' "$0" | sed 's/^# \?//'; exit 0 ;;
@@ -117,6 +119,7 @@ printf '%s\n' "$ADMIN_PASS" | ssh "$NAS_HOST" \
         ${DRY_RUN_FLAG} \
         ${REWRITE_FLAG} \
         --haproxy '${HAPROXY_IP}' \
+        --local-ip '${LOCAL_IP}' \
         --admin-user '${ADMIN_USER}' \
         --admin-email '${ADMIN_EMAIL}' \
         --read-pass-stdin \

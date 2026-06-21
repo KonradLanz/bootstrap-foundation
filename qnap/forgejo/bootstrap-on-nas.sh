@@ -39,6 +39,7 @@ while [ $# -gt 0 ]; do
         --admin-user)      ADMIN_USER="$2";                 shift 2 ;;
         --admin-email)     ADMIN_EMAIL="$2";                shift 2 ;;
         --admin-pass)      ADMIN_PASS="$2";                 shift 2 ;;
+        --local-ip)        LOCAL_IP="$2";                   shift 2 ;;
         --read-pass-stdin) READ_PASS_STDIN=1;               shift ;;
         *)                 FORGEJO_DOMAIN="$1";             shift ;;
     esac
@@ -123,5 +124,6 @@ sh "${REPO_DIR}/qnap/forgejo/bootstrap-forgejo.sh" \
     --haproxy "$HAPROXY_IP" \
     --admin-user "$ADMIN_USER" \
     --admin-email "$ADMIN_EMAIL" \
+    ${LOCAL_IP:+--local-ip "$LOCAL_IP"} \
     ${ADMIN_PASS:+--admin-pass "$ADMIN_PASS"} \
     "$FORGEJO_DOMAIN"

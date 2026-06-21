@@ -76,6 +76,8 @@ while [ $# -gt 0 ]; do
         --admin-user)      ADMIN_USER="$2";     shift 2 ;;
         --admin-email)     ADMIN_EMAIL="$2";    shift 2 ;;
         --admin-pass)      ADMIN_PASS="$2";     shift 2 ;;
+        --local-ip)        LOCAL_IP="$2";       shift 2 ;;
+        --mgmt-ip)         LOCAL_IP="$2";       shift 2 ;;
         --help|-h)
             cat <<EOF
 bootstrap-forgejo.sh — Install Forgejo via Docker on QNAP
@@ -183,7 +185,11 @@ fi
 
 # ── Step 3: Management IP + URLs ─────────────────────────────────────────────
 log_info "[3/7] Detecting management IP..."
-get_management_ip
+if [ -z "${LOCAL_IP:-}" ]; then
+    get_management_ip
+else
+    log_success "IP: $LOCAL_IP (via --local-ip)"
+fi
 
 [ -z "$FORGEJO_DOMAIN" ] && { FORGEJO_DOMAIN="$LOCAL_IP"; log_warn "No DOMAIN supplied; using IP: $FORGEJO_DOMAIN"; }
 

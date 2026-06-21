@@ -299,6 +299,9 @@ else
             "docker exec nas-postgres psql -U ${PG_SUPERUSER} -tc \"SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}'\" | grep -q 1 || docker exec nas-postgres psql -U ${PG_SUPERUSER} -c \"CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASS}';\""
         execute_cmd "Create database '${DB_NAME}' owned by '${DB_USER}'" \
             "docker exec nas-postgres psql -U ${PG_SUPERUSER} -tc \"SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'\" | grep -q 1 || docker exec nas-postgres psql -U ${PG_SUPERUSER} -c \"CREATE DATABASE ${DB_NAME} OWNER ${DB_USER} ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE template0;\""
+        # PG15+: GRANT SCHEMA public -- ohne das schlaegt CREATE TABLE fehl
+        execute_cmd "Grant schema public to '${DB_USER}'" \
+            "docker exec nas-postgres psql -U ${PG_SUPERUSER} -c \"GRANT ALL ON SCHEMA public TO ${DB_USER};\" ${DB_NAME}"
 
         DB_ENV="      - FORGEJO__database__DB_TYPE=postgres
       - FORGEJO__database__HOST=nas-postgres:5432

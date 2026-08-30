@@ -21,6 +21,7 @@ _ok()   { printf '\n\033[1;32m>>> %s\033[0m\n\n' "$*"; }
 _wait() { printf '\033[1;33m%s\033[0m\n' "$*"; }
 _warn() { printf '\n\033[1;31m>>> %s\033[0m\n\n' "$*"; }
 
+# ---------------------------------------------------------------------------
 _banner 'SCHRITT 1 VON 6: SPEICHERZUGRIFF'
 if [ ! -d "$HOME/storage" ]; then
   _wait 'Fordere Speicherzugriff an ...'
@@ -30,12 +31,14 @@ else
   _ok 'BEREITS ERLEDIGT - WEITER GEHTS'
 fi
 
+# ---------------------------------------------------------------------------
 _banner 'SCHRITT 2 VON 6: GRUNDPROGRAMME'
 _wait 'Aktualisiere und installiere Grundprogramme ... bitte warten (kann 1-2 Minuten dauern)'
 pkg update -y >/dev/null 2>&1
 pkg install -y git openssh curl wget python nodejs vim termux-api gh >/dev/null 2>&1
 _ok 'GRUNDPROGRAMME BEREIT'
 
+# ---------------------------------------------------------------------------
 _banner 'SCHRITT 3 VON 6: GIT-EINSTELLUNGEN'
 if [ -z "$(git config --global user.name 2>/dev/null)" ]; then
   printf 'WIE SOLL DEIN NAME BEI AENDERUNGEN ANGEZEIGT WERDEN?\n> '
@@ -51,6 +54,7 @@ git config --global init.defaultBranch main
 git config --global pull.rebase false
 _ok "GIT EINGERICHTET: $(git config --global user.name) <$(git config --global user.email)>"
 
+# ---------------------------------------------------------------------------
 _banner 'SCHRITT 4 VON 6: BEI GITHUB ANMELDEN'
 if gh auth status >/dev/null 2>&1; then
   _ok 'DU BIST BEREITS ANGEMELDET - KEIN LOGIN NOETIG'
@@ -62,9 +66,11 @@ else
   _ok 'ANMELDUNG ERFOLGREICH'
 fi
 
+# WICHTIG: Verbindet git direkt mit dem gh-Login, KEIN SSH-Key noetig.
 gh auth setup-git >/dev/null 2>&1 || true
 _ok 'GIT NUTZT JETZT DEINEN GITHUB-LOGIN AUTOMATISCH (HTTPS, KEIN SSH-KEY NOETIG)'
 
+# ---------------------------------------------------------------------------
 _banner 'SCHRITT 5 VON 6: PROJEKTE HERUNTERLADEN'
 mkdir -p "$PROJECTS"
 
@@ -86,7 +92,8 @@ _clone_or_pull() {
 _clone_or_pull 'bootstrap-foundation'
 _clone_or_pull 'hello-world-apk'
 
-_banner 'SCHRITT 6 VON 6: HILFS-BEFEHLE EINRICHTEN'
+# ---------------------------------------------------------------------------
+_banner 'SCHRITT 6 VON 6: HILFS-BEFEHLE + ACODE INSTALLATION'
 if ! grep -q 'alias gcp=' "$HOME/.bashrc" 2>/dev/null; then
   cat >> "$HOME/.bashrc" << 'BASHRC'
 
@@ -104,6 +111,19 @@ else
   _ok 'BEFEHLE BEREITS VORHANDEN'
 fi
 
+# Acode Installation via Play Store (termux-open-url)
+printf '\n\033[1;33mACODE INSTALLATION\033[0m\n'
+if command -v termux-open-url >/dev/null 2>&1; then
+  printf '\nAcode (Code-Editor) wird jetzt im Play Store geoeffnet.\n'
+  printf 'Bitte auf "Installieren" tippen, dann zurueck zu Termux wechseln.\n\n'
+  termux-open-url 'https://play.google.com/store/apps/details?id=com.foxdebug.acodefree'
+  _ok 'ACODE-INSTALLATIONSSEITE GEOEFFNET'
+else
+  printf '\ntermux-open-url nicht gefunden. Bitte Acode manuell installieren:\n'
+  printf 'https://play.google.com/store/apps/details?id=com.foxdebug.acodefree\n\n'
+fi
+
+# ---------------------------------------------------------------------------
 printf '\n\033[1;32m########################################\033[0m\n'
 printf '\033[1;32m#      ALLES FERTIG EINGERICHTET!      #\033[0m\n'
 printf '\033[1;32m########################################\033[0m\n\n'
@@ -113,9 +133,9 @@ printf '  %s/bootstrap-foundation\n' "$PROJECTS"
 printf '  %s/hello-world-apk\n\n' "$PROJECTS"
 
 printf 'NAECHSTER SCHRITT:\n'
-printf '  1. Acode oeffnen\n'
+printf '  1. Acode oeffnen (wenn noch nicht installiert: Play Store)\n'
 printf '  2. Ordner oeffnen: %s/hello-world-apk\n' "$PROJECTS"
-printf '  3. Datei www/index.html bearbeiten\n'
+printf '  3. Datei www/index.html bearbeiten\n' "$PROJECTS"
 printf '  4. In Termux: cd %s/hello-world-apk\n' "$PROJECTS"
 printf '  5. Dann: gcp "meine erste Aenderung"\n\n'
 

@@ -1,6 +1,6 @@
 # bootstrap-foundation
 
-Cross-platform bootstrap layer fuer Windows, macOS, Alpine (WSL2), Ubuntu (WSL2) und QNAP Entware.
+Cross-platform bootstrap layer fuer Windows, macOS, Alpine (WSL2), Ubuntu (WSL2), QNAP Entware und **Android/Termux**.
 
 ## Architektur
 
@@ -22,10 +22,13 @@ git-history-tools                   <- History-Cleanup Tools
 | **Alpine / WSL2** | `wget -qO- https://raw.githubusercontent.com/KonradLanz/bootstrap-foundation/main/alpine/bootstrap.sh \| sh` |
 | **Ubuntu / WSL2** | `curl -fsSL https://raw.githubusercontent.com/KonradLanz/bootstrap-foundation/main/ubuntu/bootstrap.sh \| sh` |
 | **QNAP Entware** | `wget -qO- https://raw.githubusercontent.com/KonradLanz/bootstrap-foundation/main/qnap/bootstrap.sh \| sh` |
+| **Android / Termux** | `curl -fsSL https://raw.githubusercontent.com/KonradLanz/bootstrap-foundation/main/android/bootstrap.sh \| sh` |
+
+> **Android**: Termux zuerst manuell von [F-Droid](https://f-droid.org/packages/com.termux/) installieren, dann den One-Liner in Termux ausführen. Details: [android/README.md](android/README.md)
 
 ## Was jedes Bootstrap macht
 
-1. Paketmanager pruefen / installieren (winget / brew / apk / apt / opkg)
+1. Paketmanager pruefen / installieren (winget / brew / apk / apt / opkg / pkg)
 2. git installieren
 3. Basis-Repos klonen (`ExecutionPolicy-Foundation`, `bootstrap-foundation`)
 4. Plattformspezifische Nachschritte ausgeben

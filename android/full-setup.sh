@@ -135,9 +135,60 @@ printf '  %s/hello-world-apk\n\n' "$PROJECTS"
 printf 'NAECHSTER SCHRITT:\n'
 printf '  1. Acode oeffnen (wenn noch nicht installiert: Play Store)\n'
 printf '  2. Ordner oeffnen: %s/hello-world-apk\n' "$PROJECTS"
-printf '  3. Datei www/index.html bearbeiten\n' "$PROJECTS"
+printf '  3. Datei www/index.html bearbeiten\n'
 printf '  4. In Termux: cd %s/hello-world-apk\n' "$PROJECTS"
 printf '  5. Dann: gcp "meine erste Aenderung"\n\n'
 
 printf '\033[1;32mTIPP: Dieses Skript kannst du JEDERZEIT erneut ausfuehren.\033[0m\n'
 printf '\033[1;32mEs ueberspringt automatisch alles, was schon erledigt ist.\033[0m\n\n'
+
+# ---------------------------------------------------------------------------
+_banner 'WARTE AUF ACODE + PROJEKT OEFFNEN'
+
+ACODE_PACKAGE="com.foxdebug.acodefree"
+PROJECT_PATH="$PROJECTS/hello-world-apk"
+
+printf '\033[1;33m✋ Sobald Acode installiert ist, wird das Projekt automatisch geoeffnet.\033[0m\n'
+printf '\033[1;33m   Pruefe alle 30 Sekunden...\033[0m\n'
+printf '\033[1;33m   Abbrechen jederzeit mit:  Ctrl+C\033[0m\n\n'
+
+# Sauberes Abbrechen via trap
+_acode_cleanup() {
+  printf '\n\n\033[1;31m>>> Abgebrochen. Kein Problem – du kannst Acode spaeter manuell starten:\033[0m\n'
+  printf '    am start -n %s/com.foxdebug.acode.MainActivity\n\n' "$ACODE_PACKAGE"
+  exit 0
+}
+trap '_acode_cleanup' INT TERM
+
+_ATTEMPT=0
+while true; do
+  _ATTEMPT=$(( _ATTEMPT + 1 ))
+  printf '[Versuch %d] Pruefe ob Acode installiert ist...\n' "$_ATTEMPT"
+
+  if pm list packages 2>/dev/null | grep -q "$ACODE_PACKAGE"; then
+    printf '\n\033[1;32m✅ Acode gefunden! Oeffne Projekt...\033[0m\n'
+    # Versuche Acode mit Projektpfad zu starten (braucht termux-am oder am direkt)
+    if command -v am >/dev/null 2>&1; then
+      am start -n "${ACODE_PACKAGE}/com.foxdebug.acode.MainActivity" \
+        --es path "$PROJECT_PATH" 2>/dev/null \
+      && _ok "PROJEKT GEOEFFNET IN ACODE: $PROJECT_PATH" \
+      || {
+        # Fallback: Acode ohne Pfad oeffnen
+        am start -n "${ACODE_PACKAGE}/com.foxdebug.acode.MainActivity" 2>/dev/null
+        _ok "ACODE GEOEFFNET (Bitte Ordner manuell oeffnen: $PROJECT_PATH)"
+      }
+    elif command -v termux-open-url >/dev/null 2>&1; then
+      termux-open-url "acode://open?path=${PROJECT_PATH}"
+      _ok "ACODE UEBER DEEP-LINK GEOEFFNET"
+    else
+      printf '\n\033[1;33m⚠ Acode ist installiert, aber kein Startbefehl verfuegbar.\033[0m\n'
+      printf '   Bitte Acode manuell oeffnen und diesen Ordner auswaehlen:\n'
+      printf '   %s\n\n' "$PROJECT_PATH"
+    fi
+    trap - INT TERM
+    break
+  else
+    printf '   ⌛ Noch nicht installiert. Naechste Pruefung in 30 Sek. (Abbrechen: Ctrl+C)\n'
+    sleep 30
+  fi
+done

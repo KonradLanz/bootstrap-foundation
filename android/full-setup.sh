@@ -2,7 +2,7 @@
 # bootstrap-foundation/android/full-setup.sh
 # IDEMPOTENT All-in-One Setup fuer Android/Termux.
 # Kann beliebig oft erneut gestartet werden - macht dort weiter, wo aufgehoert wurde.
-# Nutzt HTTPS + gh-Credential-Helper statt SSH-Keys (keine "Permission denied (publickey)" Fehler mehr).
+# Nutzt HTTPS + gh-Credential-Helper statt SSH-Keys.
 #
 # One-liner:
 #   curl -fsSL https://raw.githubusercontent.com/KonradLanz/bootstrap-foundation/main/android/full-setup.sh | sh
@@ -21,7 +21,6 @@ _ok()   { printf '\n\033[1;32m>>> %s\033[0m\n\n' "$*"; }
 _wait() { printf '\033[1;33m%s\033[0m\n' "$*"; }
 _warn() { printf '\n\033[1;31m>>> %s\033[0m\n\n' "$*"; }
 
-# ---------------------------------------------------------------------------
 _banner 'SCHRITT 1 VON 6: SPEICHERZUGRIFF'
 if [ ! -d "$HOME/storage" ]; then
   _wait 'Fordere Speicherzugriff an ...'
@@ -31,14 +30,12 @@ else
   _ok 'BEREITS ERLEDIGT - WEITER GEHTS'
 fi
 
-# ---------------------------------------------------------------------------
 _banner 'SCHRITT 2 VON 6: GRUNDPROGRAMME'
 _wait 'Aktualisiere und installiere Grundprogramme ... bitte warten (kann 1-2 Minuten dauern)'
 pkg update -y >/dev/null 2>&1
 pkg install -y git openssh curl wget python nodejs vim termux-api gh >/dev/null 2>&1
 _ok 'GRUNDPROGRAMME BEREIT'
 
-# ---------------------------------------------------------------------------
 _banner 'SCHRITT 3 VON 6: GIT-EINSTELLUNGEN'
 if [ -z "$(git config --global user.name 2>/dev/null)" ]; then
   printf 'WIE SOLL DEIN NAME BEI AENDERUNGEN ANGEZEIGT WERDEN?\n> '
@@ -54,7 +51,6 @@ git config --global init.defaultBranch main
 git config --global pull.rebase false
 _ok "GIT EINGERICHTET: $(git config --global user.name) <$(git config --global user.email)>"
 
-# ---------------------------------------------------------------------------
 _banner 'SCHRITT 4 VON 6: BEI GITHUB ANMELDEN'
 if gh auth status >/dev/null 2>&1; then
   _ok 'DU BIST BEREITS ANGEMELDET - KEIN LOGIN NOETIG'
@@ -66,11 +62,9 @@ else
   _ok 'ANMELDUNG ERFOLGREICH'
 fi
 
-# WICHTIG: Verbindet git direkt mit dem gh-Login, KEIN SSH-Key noetig.
 gh auth setup-git >/dev/null 2>&1 || true
 _ok 'GIT NUTZT JETZT DEINEN GITHUB-LOGIN AUTOMATISCH (HTTPS, KEIN SSH-KEY NOETIG)'
 
-# ---------------------------------------------------------------------------
 _banner 'SCHRITT 5 VON 6: PROJEKTE HERUNTERLADEN'
 mkdir -p "$PROJECTS"
 
@@ -92,7 +86,6 @@ _clone_or_pull() {
 _clone_or_pull 'bootstrap-foundation'
 _clone_or_pull 'hello-world-apk'
 
-# ---------------------------------------------------------------------------
 _banner 'SCHRITT 6 VON 6: HILFS-BEFEHLE + ACODE INSTALLATION'
 if ! grep -q 'alias gcp=' "$HOME/.bashrc" 2>/dev/null; then
   cat >> "$HOME/.bashrc" << 'BASHRC'
@@ -111,7 +104,6 @@ else
   _ok 'BEFEHLE BEREITS VORHANDEN'
 fi
 
-# Acode Installation via Play Store (termux-open-url)
 printf '\n\033[1;33mACODE INSTALLATION\033[0m\n'
 if command -v termux-open-url >/dev/null 2>&1; then
   printf '\nAcode (Code-Editor) wird jetzt im Play Store geoeffnet.\n'
@@ -123,7 +115,6 @@ else
   printf 'https://play.google.com/store/apps/details?id=com.foxdebug.acodefree\n\n'
 fi
 
-# ---------------------------------------------------------------------------
 printf '\n\033[1;32m########################################\033[0m\n'
 printf '\033[1;32m#      ALLES FERTIG EINGERICHTET!      #\033[0m\n'
 printf '\033[1;32m########################################\033[0m\n\n'
@@ -132,63 +123,46 @@ printf 'DEINE PROJEKTE LIEGEN HIER:\n'
 printf '  %s/bootstrap-foundation\n' "$PROJECTS"
 printf '  %s/hello-world-apk\n\n' "$PROJECTS"
 
-printf 'NAECHSTER SCHRITT:\n'
-printf '  1. Acode oeffnen (wenn noch nicht installiert: Play Store)\n'
-printf '  2. Ordner oeffnen: %s/hello-world-apk\n' "$PROJECTS"
-printf '  3. Datei www/index.html bearbeiten\n'
-printf '  4. In Termux: cd %s/hello-world-apk\n' "$PROJECTS"
-printf '  5. Dann: gcp "meine erste Aenderung"\n\n'
+printf '\033[1;36m========================================\033[0m\n'
+printf '\033[1;36m#  NAECHSTE SCHRITTE IN ACODE          #\033[0m\n'
+printf '\033[1;36m========================================\033[0m\n\n'
+
+printf '1. Acode oeffnen (wenn noch nicht installiert: Play Store)\n\n'
+
+printf '2. In Acode:\n'
+printf '   - Menue (drei Striche oben links)\n'
+printf '   - Datei -> Ordner oeffnen\n\n'
+
+printf '3. Zu diesem Ordner navigieren:\n'
+printf '   %s/hello-world-apk\n\n' "$PROJECTS"
+
+printf '4. Ordner antippen -> "Oeffnen"\n\n'
+
+printf '5. Datei oeffnen: www/index.html\n\n'
+
+printf '6. Diese Zeile suchen:\n'
+printf '   <h1 id="greeting">Hello World</h1>\n\n'
+
+printf '7. Ersetzen durch:\n'
+printf '   <h1 id="greeting">Hello, we change the world</h1>\n\n'
+
+printf '8. Speichern (Menue -> Speichern)\n\n'
+
+printf '\033[1;36m========================================\033[0m\n'
+printf '\033[1;36m#  DANN ZURUECK IN TERMUX              #\033[0m\n'
+printf '\033[1;36m========================================\033[0m\n\n'
+
+printf 'In Termux eingeben:\n\n'
+printf '  cd %s/hello-world-apk\n' "$PROJECTS"
+printf '  gcp "meine erste Aenderung"\n\n'
+
+printf 'Das macht: git add + commit + push in einem Schritt.\n\n'
 
 printf '\033[1;32mTIPP: Dieses Skript kannst du JEDERZEIT erneut ausfuehren.\033[0m\n'
 printf '\033[1;32mEs ueberspringt automatisch alles, was schon erledigt ist.\033[0m\n\n'
 
-# ---------------------------------------------------------------------------
-_banner 'WARTE AUF ACODE + PROJEKT OEFFNEN'
+printf '\033[1;33mBuild verfolgen:\033[0m\n'
+printf '  https://github.com/KonradLanz/hello-world-apk/actions\n\n'
 
-ACODE_PACKAGE="com.foxdebug.acodefree"
-PROJECT_PATH="$PROJECTS/hello-world-apk"
-
-printf '\033[1;33m✋ Sobald Acode installiert ist, wird das Projekt automatisch geoeffnet.\033[0m\n'
-printf '\033[1;33m   Pruefe alle 30 Sekunden...\033[0m\n'
-printf '\033[1;33m   Abbrechen jederzeit mit:  Ctrl+C\033[0m\n\n'
-
-# Sauberes Abbrechen via trap
-_acode_cleanup() {
-  printf '\n\n\033[1;31m>>> Abgebrochen. Kein Problem – du kannst Acode spaeter manuell starten:\033[0m\n'
-  printf '    am start -n %s/com.foxdebug.acode.MainActivity\n\n' "$ACODE_PACKAGE"
-  exit 0
-}
-trap '_acode_cleanup' INT TERM
-
-_ATTEMPT=0
-while true; do
-  _ATTEMPT=$(( _ATTEMPT + 1 ))
-  printf '[Versuch %d] Pruefe ob Acode installiert ist...\n' "$_ATTEMPT"
-
-  if pm list packages 2>/dev/null | grep -q "$ACODE_PACKAGE"; then
-    printf '\n\033[1;32m✅ Acode gefunden! Oeffne Projekt...\033[0m\n'
-    # Versuche Acode mit Projektpfad zu starten (braucht termux-am oder am direkt)
-    if command -v am >/dev/null 2>&1; then
-      am start -n "${ACODE_PACKAGE}/com.foxdebug.acode.MainActivity" \
-        --es path "$PROJECT_PATH" 2>/dev/null \
-      && _ok "PROJEKT GEOEFFNET IN ACODE: $PROJECT_PATH" \
-      || {
-        # Fallback: Acode ohne Pfad oeffnen
-        am start -n "${ACODE_PACKAGE}/com.foxdebug.acode.MainActivity" 2>/dev/null
-        _ok "ACODE GEOEFFNET (Bitte Ordner manuell oeffnen: $PROJECT_PATH)"
-      }
-    elif command -v termux-open-url >/dev/null 2>&1; then
-      termux-open-url "acode://open?path=${PROJECT_PATH}"
-      _ok "ACODE UEBER DEEP-LINK GEOEFFNET"
-    else
-      printf '\n\033[1;33m⚠ Acode ist installiert, aber kein Startbefehl verfuegbar.\033[0m\n'
-      printf '   Bitte Acode manuell oeffnen und diesen Ordner auswaehlen:\n'
-      printf '   %s\n\n' "$PROJECT_PATH"
-    fi
-    trap - INT TERM
-    break
-  else
-    printf '   ⌛ Noch nicht installiert. Naechste Pruefung in 30 Sek. (Abbrechen: Ctrl+C)\n'
-    sleep 30
-  fi
-done
+printf '\033[1;33mFertige APK herunterladen:\033[0m\n'
+printf '  https://github.com/KonradLanz/hello-world-apk/releases\n\n'
